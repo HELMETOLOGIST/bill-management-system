@@ -46,7 +46,7 @@
   <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-      <a href="{% url "dashboard" %}" class="logo d-flex align-items-center">
+      <a href="{% url "store_dashboard" %}" class="logo d-flex align-items-center">
         <img src="{% static "assets_admin/img/logo.jpg" %}" alt="" width="110px">
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
@@ -87,7 +87,7 @@
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="{% url "admin_logout" %}">
+              <a class="dropdown-item d-flex align-items-center" href="{% url "store_login" %}">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Sign Out</span>
               </a>
@@ -107,82 +107,31 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "dashboard" %}">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "sales_report" %}">
+        <a class="nav-link collapsed" href="">
           <i class="bi bi-calculator"></i>
-          <span>Sales Report</span>
+          <span>Billing</span>
         </a>
       </li><!-- End Sales report Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "products" %}">
+        <a class="nav-link collapsed" href="">
           <i class=" ri-dropbox-line"></i>
-          <span>Products</span>
+          <span>Item Master</span>
         </a>
       </li><!-- End Products Nav -->
-
       <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "users" %}">
-          <i class=" ri-group-line"></i>
-          <span>Users</span>
-        </a>
-      </li><!-- End users Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "category" %}">
+        <a class="nav-link collapsed" href="">
           <i class=" ri-list-settings-fill"></i>
-          <span>Category</span>
+          <span>Sales Report</span>
         </a>
       </li><!-- End Category Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "brands" %}">
-          <i class=" ri-list-ordered"></i>
-          <span>Brand</span>
-        </a>
-      </li><!-- End Brand Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "admin_order" %}">
-          <i class=" ri-archive-line"></i>
-          <span>Orders</span>
-        </a>
-      </li><!-- End Orders Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "coupon" %}">
-          <i class=" ri-coupon-2-line
-          "></i>
-          <span>Coupons</span>
-        </a>
-      </li><!-- End Coupon Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "banner" %}">
-          <i class=" ri-bilibili-line"></i>
-          <span>Banner</span>
-        </a>
-      </li><!-- End Banner Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "offers" %}">
-          <i class=" ri-gift-2-line"></i>
-          <span>Product Offers</span>
-        </a>
-      </li><!-- Offers Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "category_offer" %}">
-          <i class=" ri-gift-2-line"></i>
-          <span>Category Offers</span>
-        </a>
-      </li><!-- Offers Nav -->
     </ul>
   </aside><!-- End Sidebar-->
   

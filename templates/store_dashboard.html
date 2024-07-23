@@ -1,0 +1,439 @@
+{% extends "store_base.html" %}
+{% load static %}
+{% block title%}Dashboard{% endblock %} 
+{% block content %}
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1 class="">Dashboard</h1>
+    <nav class="d-flex justify-content-between align-items-center">
+      <ol class="breadcrumb mb-5">
+        <li class="breadcrumb-item"><a href="">Home</a></li>
+        <li class="breadcrumb-item active">Dashboard</li>
+      </ol>
+
+      <div class="card info-card sales-card">
+        <div class="card-body d-flex mt-3">
+          <a
+            class="btn btn-primary me-2"
+            href="{% url 'store_dashboard' %}?filter_value=today"
+            >Today</a
+          >
+          <a
+            class="btn btn-primary me-2"
+            href="{% url 'store_dashboard' %}?filter_value=this_month"
+            >This Month</a
+          >
+          <a
+            class="btn btn-primary"
+            href="{% url 'store_dashboard' %}?filter_value=this_year"
+            >This Year</a
+          >
+        </div>
+      </div>
+    </nav>
+  </div>
+  <!-- End Page Title -->
+  <section class="section dashboard mb-5">
+    <div class="row">
+      <!-- Left side columns -->
+      <div class="col-lg-8">
+        <div class="row">
+          <!--Button-->
+
+          <!--Button End-->
+
+          <!-- Sales Card -->
+          <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card">
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle=""></a>
+                <ul class=""></ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Sales <span>| </span></h5>
+
+                <div class="d-flex align-items-center">
+                  <div
+                    class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                  >
+                    <i class="bi bi-cart"></i>
+                  </div>
+                  <div class="ps-3">
+                    <h6>{{orders}}</h6>
+                    <span class="text-success small pt-1 fw-bold">12%</span>
+                    <span class="text-muted small pt-2 ps-1">increase</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Sales Card -->
+
+          <!-- Revenue Card -->
+          <div class="col-xxl-4 col-md-6">
+            <div class="card info-card revenue-card">
+              <div class="filter">
+                <a class="" href="#" data-bs-toggle=""></a>
+                <ul class=""></ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Revenue <span>| </span></h5>
+
+                <div class="d-flex align-items-center">
+                  <div
+                    class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                  >
+                    <i class="bi bi-currency-dollar"></i>
+                  </div>
+                  <div class="ps-3">
+                    {% if revenue == None %}
+                    <h6>$ 0</h6>
+                    {% else %}
+                    <h6>${{revenue}}</h6>
+                    {% endif %}
+                    <span class="text-success small pt-1 fw-bold">8%</span>
+                    <span class="text-muted small pt-2 ps-1">increase</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Revenue Card -->
+
+          <!-- Customers Card -->
+          <div class="col-xxl-4 col-xl-12">
+            <div class="card info-card customers-card">
+              <div class="filter">
+                <a class="  " href="#" data-bs-toggle=""><i class=""></i></a>
+                <ul class=""></ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Customers <span>| </span></h5>
+
+                <div class="d-flex align-items-center">
+                  <div
+                    class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                  >
+                    <i class="bi bi-people"></i>
+                  </div>
+                  <div class="ps-3">
+                    <h6>{{users}}</h6>
+                    <span class="text-danger small pt-1 fw-bold">12%</span>
+                    <span class="text-muted small pt-2 ps-1">decrease</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Customers Card -->
+
+          <!-- Reports -->
+          <div class="col-12">
+            <div class="card">
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"
+                  ><i class="bi bi-three-dots"></i
+                ></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                    <h6>Filter</h6>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" data-line-value="day"
+                      >Today</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" data-line-value="month"
+                      >This Month</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" data-line-value="year"
+                      >This Year</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title">Reports <span>/Today</span></h5>
+                <!-- Line Chart -->
+                <div class="card-body">
+                  <h5 class="card-title">Line Chart</h5>
+                  <!-- Line Chart -->
+                  <canvas id="lineChart" style="max-height: 400px"></canvas>
+                  <script>
+                    document.addEventListener("DOMContentLoaded", () => {
+                      // Retrieve the selected filter from localStorage
+                      const selectedFilter =
+                        localStorage.getItem("selectedFilter") || "day";
+
+                      const dayData = JSON.parse(
+                        "{{ weekday_orders_json|escapejs }}"
+                      );
+                      const monthlyData = JSON.parse(
+                        "{{ month_orders_json|escapejs }}"
+                      );
+                      const yearlyData = JSON.parse(
+                        "{{ year_orders_json|escapejs }}"
+                      );
+
+                      const chartData = {
+                        day: {
+                          labels: dayData.map((item) =>
+                            item.date.toUpperCase()
+                          ),
+                          values: dayData.map((item) => item.count),
+                        },
+                        month: {
+                          labels: monthlyData.map((item) =>
+                            item.date.toUpperCase()
+                          ),
+                          values: monthlyData.map((item) => item.count),
+                        },
+                        year: {
+                          labels: yearlyData.map((item) =>
+                            item.date.toString()
+                          ),
+                          values: yearlyData.map((item) => item.count),
+                        },
+                      };
+
+                      const lineChart = new Chart(
+                        document.querySelector("#lineChart"),
+                        {
+                          type: "line",
+                          data: {
+                            labels: chartData[selectedFilter].labels,
+                            datasets: [
+                              {
+                                label: "Orders",
+                                data: chartData[selectedFilter].values,
+                                fill: false,
+                                borderColor: "rgb(75, 192, 192)",
+                                tension: 0.1,
+                              },
+                            ],
+                          },
+                          options: {
+                            scales: {
+                              y: {
+                                beginAtZero: true,
+                              },
+                            },
+                          },
+                        }
+                      );
+
+                      // Dropdown click event
+                      document
+                        .querySelectorAll(".dropdown-item")
+                        .forEach((item) => {
+                          item.addEventListener("click", (event) => {
+                            event.preventDefault();
+                            const lineValue =
+                              event.target.getAttribute("data-line-value");
+                            updateChart(lineValue);
+                          });
+                        });
+
+                      function updateChart(lineValue) {
+                        // Update the selected filter in localStorage
+                        localStorage.setItem("selectedFilter", lineValue);
+
+                        lineChart.data.labels = chartData[lineValue].labels;
+                        lineChart.data.datasets[0].data =
+                          chartData[lineValue].values;
+                        lineChart.update();
+                      }
+                    });
+                  </script>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Reports -->
+
+          <!-- Website Traffic -->
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Most Used Payment Method</h5>
+
+                <!-- Donut Chart -->
+                <div
+                  id="donutChart"
+                  style="min-height: 400px"
+                  class="echart"
+                ></div>
+
+                <script>
+                  document.addEventListener("DOMContentLoaded", () => {
+                    // Your list of dictionaries
+                    const g = JSON.parse(
+                      "{{ payment_method_counts_json|escapejs }}"
+                    );
+
+                    // Initialize an empty array to store the data
+                    const data = g.map((item) => ({
+                      value: item.count,
+                      name: item.payment_mode.toUpperCase(),
+                    }));
+
+                    echarts
+                      .init(document.querySelector("#donutChart"))
+                      .setOption({
+                        tooltip: {
+                          trigger: "item",
+                        },
+                        legend: {
+                          top: "5%",
+                          left: "center",
+                        },
+                        series: [
+                          {
+                            name: "Payment From",
+                            type: "pie",
+                            radius: ["40%", "70%"],
+                            avoidLabelOverlap: false,
+                            label: {
+                              show: false,
+                              position: "center",
+                            },
+                            emphasis: {
+                              label: {
+                                show: true,
+                                fontSize: "18",
+                                fontWeight: "bold",
+                              },
+                            },
+                            labelLine: {
+                              show: false,
+                            },
+                            data: data,
+                          },
+                        ],
+                      });
+                  });
+                </script>
+              </div>
+            </div>
+          </div>
+          <!-- End Website Traffic -->
+
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Most Buy Category Chart</h5>
+
+                <!-- Polar Area Chart -->
+                <canvas id="polarAreaChart" style="max-height: 400px"></canvas>
+                <script>
+                  document.addEventListener("DOMContentLoaded", () => {
+                    const cat = JSON.parse(
+                      "{{ category_counts_list_json|escapejs }}"
+                    );
+
+                    const labels = cat.map((item) => item.name.toUpperCase());
+                    const dataValues = cat.map((item) => item.count);
+
+                    new Chart(document.querySelector("#polarAreaChart"), {
+                      type: "polarArea",
+                      data: {
+                        labels: labels, // Use the extracted labels
+                        datasets: [
+                          {
+                            label: "Most Bought Categories", // Update the label for clarity
+                            data: dataValues, // Use the extracted data values
+                            backgroundColor: [
+                              "rgb(255, 99, 132)",
+                              "rgb(75, 192, 192)",
+                              "rgb(255, 205, 86)",
+                              "rgb(201, 203, 207)",
+                              "rgb(54, 162, 235)",
+                            ],
+                          },
+                        ],
+                      },
+                    });
+                  });
+                </script>
+                <!-- End Polar Area Chart -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Left side columns -->
+
+      <!-- Right side columns -->
+      <div class="col-lg-4">
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"
+              ><i class="bi bi-three-dots"></i
+            ></a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+              <li class="dropdown-header text-start">
+                <h6>Filter</h6>
+              </li>
+
+              <li><a class="dropdown-item" href="#">Today</a></li>
+              <li><a class="dropdown-item" href="#">This Month</a></li>
+              <li><a class="dropdown-item" href="#">This Year</a></li>
+            </ul>
+          </div>
+
+          <div class="card-body">
+            <h5 class="card-title">Recent Activity <span>| Today</span></h5>
+
+            <div class="activity">
+              <div class="recent-activity-container">
+                {% for act in recent_activity|slice:":14" %}
+                <div class="activity-item d-flex">
+                  <div class="activite-label">{{act.modified_time.time}}</div>
+                  <i
+                    class="bi bi-circle-fill activity-badge text-success align-self-start"
+                  ></i>
+                  <div class="activity-content">
+                    {% if act.status == "Order Confirmed" %}
+                    <span class="text-success font-weight-bold text-uppercase"
+                      >{{act.status}}</span
+                    >
+                    {% else %}
+                    <span class="text-danger font-weight-bold text-uppercase"
+                      >{{act.status}}</span
+                    >
+                    {% endif %}
+                    <span class="text-info font-weight-bold text-uppercase"
+                      >{{act.variant.product.products_name}}</span
+                    >
+
+                    is Orderd By
+                    <a href="#" class="fw-bold text-dark"
+                      >{{act.order.address.name}}</a
+                    >
+                    Through
+                    <span class="text-success font-weight-bold text-uppercase"
+                      >{{act.order.payment_mode}}</span
+                    >
+                  </div>
+                </div>
+                <!-- End activity item-->
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Recent Activity -->
+      </div>
+      <!-- End Right side columns -->
+    </div>
+  </section>
+</main>
+<!-- End #main -->
+{% endblock %}

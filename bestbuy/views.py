@@ -17,9 +17,23 @@ def store_loginn(request):
         admin = authenticate(request, username=username,password=password)
         if admin is not None and admin.is_superuser:
             admin_login(request,admin)
-            return redirect('store_admin')
+            return redirect('store_dashboard')
         else:
             messages.error(request, "Username or Password incorrect")
             return redirect('store_login')
     else:
-        return render(request, 'store_login.html') 
+        return render(request, 'store_login.html')
+
+
+def admin_logoutt(request):
+    admin_logout(request)
+    return redirect('store_login')
+    
+
+
+def store_dashboardd(request):
+    return render(request, 'store_dashboard.html')
+
+
+def store_billingg(request):
+    return render(request, 'store_billing.html')
