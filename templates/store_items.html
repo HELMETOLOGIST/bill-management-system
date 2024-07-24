@@ -1,0 +1,71 @@
+{% extends "store_base.html" %}
+{% load static %}
+{% block title %}Products{% endblock %}
+{% block content %}
+
+<main id="main" class="main">
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title">Products</h3>
+            <a href=""><button type="submit" class="btn btn-primary">Add Product</button></a>
+            <!-- Table with stripped rows -->
+            <div class="table-responsive">
+              <table class="table datatable">
+                <thead>
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Stock</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Edit</th>
+                    <th scope="col">Delete</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% comment %} {% for pro in products %} {% endcomment %}
+                  <tr>
+                    <th scope="row">{{pro.id}}</th>
+                    <td>
+                      <center><img src="{{pro.colorvarient_set.all.0.images.last.image.url}}" height="50px" /></center>
+                    </td>
+                    <td>{{pro.products_name}}</td>
+                    <td>{{pro.category_id.name}}</td>
+                    <td class="align-middle">
+                      <a href="variants/{{pro.id}}" class="btn btn-outline-primary">Edit</a>
+                    </td>
+                    <td class="align-middle">
+                      <a href="variants/{{pro.id}}" class="btn btn-outline-danger">Delete</a>
+                    </td>
+                    {% comment %} {% if pro.is_listed %}
+                    <td>
+                      <a href="../../product_status/{{pro.id}}">
+                        <button class="badge badge-danger" style="color:red;">Unlist</button>
+                      </a>
+                    </td>
+                    {% else %}
+                    <td>
+                      <a href="../../product_status/{{pro.id}}">
+                        <button class="badge badge-success" style="color:green;">List</button>
+                      </a>
+                    </td>
+                    {% endif %}
+                    <td>
+                      <a href="../../edit_product/{{pro.id}}" class="btn btn-primary">Edit</a>
+                    </td>
+                  </tr>
+                  {% endfor %} {% endcomment %}
+                </tbody>
+              </table>
+            </div>
+            <!-- End Table with stripped rows -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- End #main -->
+{% endblock %}

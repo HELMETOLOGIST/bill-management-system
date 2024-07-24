@@ -1,210 +1,148 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bill Management</title>
-    <link
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      .container {
-        margin-top: 20px;
-      }
-
-      .table th,
-      .table td {
-        text-align: center;
-      }
-
-      .form-section {
-        margin-bottom: 20px;
-      }
-
-      .total-row {
-        font-weight: bold;
-      }
-
-      .form-control {
-        height: calc(1.5em + 0.75rem + 2px);
-      }
-
-      .custom-select {
-        height: calc(1.5em + 0.75rem + 2px);
-      }
-
-      .form-row {
-        display: flex;
-        justify-content: space-between;
-      }
-
-      .form-group {
-        flex: 1;
-        margin-right: 10px;
-      }
-
-      .form-group:last-child {
-        margin-right: 0;
-      }
-
-      .btn-primary {
-        margin-top: 10px;
-      }
-
-      .btn-success {
-        margin-top: 10px;
-      }
-
-      .btn-danger {
-        margin-left: 5px;
-      }
-
-      .text-right {
-        display: flex;
-        justify-content: flex-end;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="container">
-      <h2 class="text-center text-bold">Best Buy</h2>
-      <div class="form-section">
-        <form>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="party">Name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="party"
-                value="afdjsdfj"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="phoneNo">Phone No.</label>
-              <input
-                type="text"
-                class="form-control"
-                id="phoneNo"
-                value="342343"
-              />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="billNumber">Bill Number</label>
-              <input type="text" class="form-control" id="billNumber" />
-            </div>
-            <div class="form-group">
-              <label for="billDate">Bill Date</label>
-              <input
-                type="date"
-                class="form-control"
-                id="billDate"
-                value="2024-07-23"
-              />
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="form-section">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Item</th>
-              <th>Quantity</th>
-              <th>Price</th>
-              <th>Tax</th>
-              <th>Discount</th>
-              <th>Total Amount</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="itemTable">
-            <tr>
-              <td>1</td>
-              <td>
-                <input
-                  type="text"
-                  class="form-control item-search"
-                  placeholder="Search Item"
-                  list="itemList"
-                />
-                <datalist id="itemList">
-                  <option value="Item 1"></option>
-                  <option value="Item 2"></option>
-                  <option value="Item 3"></option>
-                </datalist>
-              </td>
-              <td><input type="number" class="form-control" value="1" /></td>
-              <td><input type="number" class="form-control" value="0" /></td>
-              <td><input type="number" class="form-control" value="0" /></td>
-              <td><input type="number" class="form-control" value="0" /></td>
-              <td><input type="number" class="form-control" value="0" /></td>
-              <td>
-                <button class="btn btn-danger" onclick="deleteRow(this)">Delete</button>
-              </td>
-            </tr>
-            <tr class="total-row">
-                <td colspan="6">TOTAL</td>
-                <td>0</td>
-            </tr>
-          </tbody>
-        </table>
-        <button class="btn btn-primary" onclick="addRow()">Add Row</button>
-        <div class="text-right">
-          <button class="btn btn-success">Save</button>
+{% extends "store_base.html" %}
+{% load static %}
+{% block title%}Billing{% endblock %} 
+{% block content %}
+<main id="main" class="main">
+<div class="container">
+  <h2 class="text-center text-bold">Best Buy</h2>
+  <div class="form-section">
+    <form>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="party">Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="party"
+            value=""
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="phoneNo">Phone No</label>
+          <input
+            type="text"
+            class="form-control"
+            id="phoneNo"
+            value=""
+          />
         </div>
       </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="billNumber">Order Id</label>
+          <input type="text" class="form-control" id="billNumber" />
+        </div>
+        <div class="form-group">
+          <label for="billDate">Bill Date</label>
+          <input
+            type="date"
+            class="form-control"
+            id="billDate"
+            value=""
+          />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="form-section">
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Tax</th>
+            <th>Discount</th>
+            <th>Total Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="itemTable">
+          <tr>
+            <td>1</td>
+            <td>
+              <input
+                type="text"
+                class="form-control item-search"
+                placeholder="Search Item"
+                list="itemList"
+              />
+              <datalist id="itemList">
+                <option value="Item 1"></option>
+                <option value="Item 2"></option>
+                <option value="Item 3"></option>
+              </datalist>
+            </td>
+            <td><input type="number" class="form-control" value="1" /></td>
+            <td><input type="number" class="form-control" value="0" /></td>
+            <td><input type="number" class="form-control" value="0" /></td>
+            <td><input type="number" class="form-control" value="0" /></td>
+            <td><input type="number" class="form-control" value="0" /></td>
+            <td>
+              <button class="btn btn-danger" onclick="deleteRow(this)">Delete</button>
+            </td>
+          </tr>
+          <tr class="total-row">
+              <td colspan="6" class="text-left">TOTAL</td>
+              <td>0</td>
+              <td></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+    <div class="button-row d-flex justify-content-between">
+      <button class="btn btn-primary" onclick="addRow()">Add Row</button>
+      <button class="btn btn-success">Save</button>
+    </div>
+  </div>
+</div>
+</main>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-      function addRow() {
-        var table = document.getElementById("itemTable");
-        var rowCount = table.rows.length;
-        var row = table.insertRow(rowCount - 1);
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+  function addRow() {
+    var table = document.getElementById("itemTable");
+    var rowCount = table.rows.length;
+    var row = table.insertRow(rowCount - 1);
 
-        row.innerHTML = `
-                <td>${rowCount}</td>
-                <td>
-                  <input type="text" class="form-control item-search" placeholder="Search Item" list="itemList" />
-                  <datalist id="itemList">
-                    <option value="Item 1"></option>
-                    <option value="Item 2"></option>
-                    <option value="Item 3"></option>
-                  </datalist>
-                </td>
-                <td><input type="number" class="form-control" value="1"></td>
-                <td><input type="number" class="form-control" value="0"></td>
-                <td><input type="number" class="form-control" value="0"></td>
-                <td><input type="number" class="form-control" value="0"></td>
-                <td><input type="number" class="form-control" value="0"></td>
-                <td>
-                  <button class="btn btn-danger" onclick="deleteRow(this)">Delete</button>
-                </td>
-            `;
-      }
+    row.innerHTML = `
+            <td>${rowCount}</td>
+            <td>
+              <input type="text" class="form-control item-search" placeholder="Search Item" list="itemList" />
+              <datalist id="itemList">
+                <option value="Item 1"></option>
+                <option value="Item 2"></option>
+                <option value="Item 3"></option>
+              </datalist>
+            </td>
+            <td><input type="number" class="form-control" value="1"></td>
+            <td><input type="number" class="form-control" value="0"></td>
+            <td><input type="number" class="form-control" value="0"></td>
+            <td><input type="number" class="form-control" value="0"></td>
+            <td><input type="number" class="form-control" value="0"></td>
+            <td>
+              <button class="btn btn-danger" onclick="deleteRow(this)">Delete</button>
+            </td>
+        `;
+  }
 
-      function deleteRow(button) {
-        var row = button.parentNode.parentNode;
-        row.parentNode.removeChild(row);
-        updateRowNumbers();
-      }
+  function deleteRow(button) {
+    var row = button.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+    updateRowNumbers();
+  }
 
-      function updateRowNumbers() {
-        var table = document.getElementById("itemTable");
-        var rows = table.rows;
-        for (var i = 0; i < rows.length - 1; i++) {
-          rows[i].cells[0].innerHTML = i + 1;
-        }
-      }
-    </script>
-  </body>
-</html>
+  function updateRowNumbers() {
+    var table = document.getElementById("itemTable");
+    var rows = table.rows;
+    for (var i = 0; i < rows.length - 1; i++) {
+      rows[i].cells[0].innerHTML = i + 1;
+    }
+  }
+</script>
+{% endblock %}

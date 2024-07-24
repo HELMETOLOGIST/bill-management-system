@@ -29,6 +29,8 @@
 
   <!-- Template Main CSS File -->
   <link href="{% static "assets_admin/css/style.css" %}" rel="stylesheet">
+  <link href="{% static "assets_admin/css/billing.css" %}" rel="stylesheet">
+
 
   <!-- =======================================================
   * Template Name: NiceAdmin
@@ -52,12 +54,12 @@
       <i class="bi bi-list toggle-sidebar-btn"></i>
     </div><!-- End Logo -->
 
-    <div class="search-bar">
+    {% comment %} <div class="search-bar">
       <form class="search-form d-flex align-items-center" method="POST" action="#">
         <input type="text" name="query" placeholder="Search" title="Enter search keyword">
         <button type="submit" title="Search"><i class="bi bi-search"></i></button>
       </form>
-    </div><!-- End Search Bar -->
+    </div><!-- End Search Bar --> {% endcomment %}
 
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
@@ -107,27 +109,27 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="">
+        <a class="nav-link collapsed" href="{% url "store_dashboard" %}">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="">
+        <a class="nav-link collapsed" href="{% url "store_billing" %}">
           <i class="bi bi-calculator"></i>
           <span>Billing</span>
         </a>
-      </li><!-- End Sales report Nav -->
+      </li><!-- End Billing Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="">
+        <a class="nav-link collapsed" href="{% url "store_items" %}">
           <i class=" ri-dropbox-line"></i>
           <span>Item Master</span>
         </a>
       </li><!-- End Products Nav -->
       <li class="nav-item">
-        <a class="nav-link collapsed" href="">
+        <a class="nav-link collapsed" href="{% url "store_report" %}">
           <i class=" ri-list-settings-fill"></i>
           <span>Sales Report</span>
         </a>

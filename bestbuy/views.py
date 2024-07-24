@@ -37,3 +37,11 @@ def store_dashboardd(request):
 
 def store_billingg(request):
     return render(request, 'store_billing.html')
+
+
+def store_itemss(request):
+    return render(request, 'store_items.html')
+
+
+def store_reportt(request):
+    return render(request, 'store_report.html')
