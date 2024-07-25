@@ -1,0 +1,80 @@
+{% extends "store_base.html" %}
+{% load static %}
+{% block title %}Add Product{% endblock %}
+{% block content  %}
+
+<main id="main" class="main">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Add Products</h5>
+
+        <!-- No Labels Form -->
+        <form id="productForm" class="row g-3" action="{% url "store_items_add" %}" method="POST">
+          {% csrf_token %}
+          <div class="col-md-12">
+            <input type="text" class="form-control" placeholder="Product Name" name="product_name">
+          </div>
+          <div class="col-12">
+            <input type="number" class="form-control" placeholder="Stock" name="stock">
+          </div>
+          <div class="col-12">
+            <input type="number" class="form-control" placeholder="Price" name="price">
+          </div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form><!-- End No Labels Form -->
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  function hideAlert() {
+    var alertMessage = document.getElementById('alert-message');
+    if (alertMessage) {
+      setTimeout(function () {
+        alertMessage.style.display = 'none';
+      }, 2000);
+    }
+  }
+  window.onload = hideAlert;
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $("#productForm").validate({
+      rules: {
+        products_name: {
+          required: true,
+          minlength: 3,
+          noConsecutiveSpaces: true
+        },
+      },
+      messages: {
+        products_name: {
+          required: "Please enter the product name",
+          minlength: "Product name must be at least 3 characters long",
+          noConsecutiveSpaces: "Product name cannot contain 2 consecutive spaces"
+        },
+      },
+      errorClass: "is-invalid",
+      errorPlacement: function (error, element) {
+        error.addClass("invalid-feedback");
+        error.insertAfter(element);
+      }
+    });
+
+    // Custom validation method
+    $.validator.addMethod("noConsecutiveSpaces", function (value, element) {
+      return !/\s{2,}/.test(value);
+    }, "Product name cannot contain more than 2 consecutive spaces");
+  });
+</script>
+
+{% endblock %}

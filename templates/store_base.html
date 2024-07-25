@@ -64,11 +64,11 @@
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
 
-        <ul class="nav-item d-block d-lg-none">
+        {% comment %} <ul class="nav-item d-block d-lg-none">
           <a class="nav-link nav-icon search-bar-toggle " href="#">
             <i class="bi bi-search"></i>
           </a>
-        </ul><!-- End Search Icon-->
+        </ul><!-- End Search Icon--> {% endcomment %}
 
           </ul><!-- End Messages Dropdown Items -->
 
@@ -89,7 +89,7 @@
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="{% url "store_login" %}">
+              <a class="dropdown-item d-flex align-items-center" href="{% url "admin_logout" %}">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Sign Out</span>
               </a>

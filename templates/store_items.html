@@ -10,7 +10,7 @@
         <div class="card">
           <div class="card-body">
             <h3 class="card-title">Products</h3>
-            <a href=""><button type="submit" class="btn btn-primary">Add Product</button></a>
+            <a href="{% url "store_items_add" %}"><button type="submit" class="btn btn-primary">Add Product</button></a>
             <!-- Table with stripped rows -->
             <div class="table-responsive">
               <table class="table datatable">
@@ -25,20 +25,19 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% comment %} {% for pro in products %} {% endcomment %}
+                  {% for pro in products %}
                   <tr>
                     <th scope="row">{{pro.id}}</th>
-                    <td>
-                      <center><img src="{{pro.colorvarient_set.all.0.images.last.image.url}}" height="50px" /></center>
-                    </td>
-                    <td>{{pro.products_name}}</td>
-                    <td>{{pro.category_id.name}}</td>
+                    <td>{{pro.name}}</td>
+                    <td>{{pro.stock}}</td>
+                    <td>{{pro.price}}</td>
                     <td class="align-middle">
-                      <a href="variants/{{pro.id}}" class="btn btn-outline-primary">Edit</a>
+                      <a href="store_items_edit/{{pro.id}}" class="btn btn-outline-primary">Edit</a>
                     </td>
                     <td class="align-middle">
-                      <a href="variants/{{pro.id}}" class="btn btn-outline-danger">Delete</a>
+                      <a href="{% url 'store_items_delete' pro.id %}" class="btn btn-outline-danger">Delete</a>
                     </td>
+
                     {% comment %} {% if pro.is_listed %}
                     <td>
                       <a href="../../product_status/{{pro.id}}">
@@ -54,9 +53,9 @@
                     {% endif %}
                     <td>
                       <a href="../../edit_product/{{pro.id}}" class="btn btn-primary">Edit</a>
-                    </td>
+                    </td> {% endcomment %}
                   </tr>
-                  {% endfor %} {% endcomment %}
+                  {% endfor %}
                 </tbody>
               </table>
             </div>
