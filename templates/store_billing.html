@@ -1,18 +1,20 @@
 {% extends "store_base.html" %}
 {% load static %}
-{% block title%}Billing{% endblock %} 
+{% block title%}Billing{% endblock %}
 {% block content %}
 <main id="main" class="main">
 <div class="container">
   <h2 class="text-center text-bold">Best Buy</h2>
   <div class="form-section">
-    <form>
+    <form action="" method="POST">
+      {% csrf_token %}
       <div class="form-row">
         <div class="form-group">
           <label for="party">Name</label>
           <input
             type="text"
             class="form-control"
+            name="name"
             id="party"
             value=""
             required
@@ -23,6 +25,7 @@
           <input
             type="text"
             class="form-control"
+            name="number"
             id="phoneNo"
             value=""
           />
@@ -31,19 +34,19 @@
       <div class="form-row">
         <div class="form-group">
           <label for="billNumber">Order Id</label>
-          <input type="text" class="form-control" id="billNumber" />
+          <input type="text" name="order_id" class="form-control" id="billNumber" />
         </div>
         <div class="form-group">
           <label for="billDate">Bill Date</label>
           <input
             type="date"
             class="form-control"
+            name="date"
             id="billDate"
             value=""
           />
         </div>
       </div>
-    </form>
   </div>
   <div class="form-section">
     <div class="table-responsive">
@@ -69,37 +72,40 @@
                 class="form-control item-search"
                 placeholder="Search Item"
                 list="itemList"
+                onchange="updatePriceAndTotal(this)"
               />
-              <datalist id="itemList">
-                <option value="Item 1"></option>
-                <option value="Item 2"></option>
-                <option value="Item 3"></option>
-              </datalist>
             </td>
-            <td><input type="number" class="form-control" value="1" /></td>
-            <td><input type="number" class="form-control" value="0" /></td>
-            <td><input type="number" class="form-control" value="0" /></td>
-            <td><input type="number" class="form-control" value="0" /></td>
-            <td><input type="number" class="form-control" value="0" /></td>
+            <td><input type="number" name="quantity" class="form-control" value="1" oninput="updateTotal(this)" /></td>
+            <td><input type="number" name="price" class="form-control" value="" readonly /></td>
+            <td><input type="number" name="tax" class="form-control" value="0" oninput="updateTotal(this)" /></td>
+            <td><input type="number" name="discount" class="form-control" value="0" oninput="updateTotal(this)" /></td>
+            <td><input type="number" name="total_amount" class="form-control" value="0" readonly /></td>
             <td>
-              <button class="btn btn-danger" onclick="deleteRow(this)">Delete</button>
+              <button class="btn btn-danger" type="button" onclick="deleteRow(this)">Delete</button>
             </td>
           </tr>
           <tr class="total-row">
               <td colspan="6" class="text-left">TOTAL</td>
-              <td>0</td>
+              <td id="grandTotal">0</td>
               <td></td>
           </tr>
         </tbody>
       </table>
     </div>
     <div class="button-row d-flex justify-content-between">
-      <button class="btn btn-primary" onclick="addRow()">Add Row</button>
-      <button class="btn btn-success">Save</button>
+      <button class="btn btn-primary" type="button" onclick="addRow()">Add Row</button>
+      <button type="submit" class="btn btn-success">Save</button>
     </div>
   </div>
 </div>
+</form>
 </main>
+
+<datalist id="itemList">
+  {% for list in product_list %}
+  <option value="{{ list.name }}" data-price="{{ list.price }}"></option>
+  {% endfor %}
+</datalist>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
@@ -107,26 +113,21 @@
 <script>
   function addRow() {
     var table = document.getElementById("itemTable");
-    var rowCount = table.rows.length;
-    var row = table.insertRow(rowCount - 1);
+    var rowCount = table.rows.length - 1; // Exclude the total row
+    var row = table.insertRow(rowCount);
 
     row.innerHTML = `
             <td>${rowCount}</td>
             <td>
-              <input type="text" class="form-control item-search" placeholder="Search Item" list="itemList" />
-              <datalist id="itemList">
-                <option value="Item 1"></option>
-                <option value="Item 2"></option>
-                <option value="Item 3"></option>
-              </datalist>
+              <input type="text" class="form-control item-search" placeholder="Search Item" list="itemList" onchange="updatePriceAndTotal(this)" />
             </td>
-            <td><input type="number" class="form-control" value="1"></td>
-            <td><input type="number" class="form-control" value="0"></td>
-            <td><input type="number" class="form-control" value="0"></td>
-            <td><input type="number" class="form-control" value="0"></td>
-            <td><input type="number" class="form-control" value="0"></td>
+            <td><input type="number" name="quantity" class="form-control" value="1" oninput="updateTotal(this)" /></td>
+            <td><input type="number" name="price" class="form-control" value="" readonly /></td>
+            <td><input type="number" name="tax" class="form-control" value="0" oninput="updateTotal(this)" /></td>
+            <td><input type="number" name="discount" class="form-control" value="0" oninput="updateTotal(this)" /></td>
+            <td><input type="number" name="total_amount" class="form-control" value="0" readonly /></td>
             <td>
-              <button class="btn btn-danger" onclick="deleteRow(this)">Delete</button>
+              <button class="btn btn-danger" type="button" onclick="deleteRow(this)">Delete</button>
             </td>
         `;
   }
@@ -135,6 +136,7 @@
     var row = button.parentNode.parentNode;
     row.parentNode.removeChild(row);
     updateRowNumbers();
+    updateGrandTotal();
   }
 
   function updateRowNumbers() {
@@ -143,6 +145,40 @@
     for (var i = 0; i < rows.length - 1; i++) {
       rows[i].cells[0].innerHTML = i + 1;
     }
+  }
+
+  function updatePriceAndTotal(input) {
+    var option = Array.from(input.list.options).find(option => option.value === input.value);
+    if (option) {
+      var price = option.getAttribute('data-price');
+      var row = input.closest('tr');
+      row.querySelector('input[name="price"]').value = price;
+      updateTotal(row.querySelector('input[name="quantity"]'));
+    }
+  }
+
+  function updateTotal(input) {
+    var row = input.closest('tr');
+    var quantity = row.querySelector('input[name="quantity"]').value || 0;
+    var price = row.querySelector('input[name="price"]').value || 0;
+    var tax = row.querySelector('input[name="tax"]').value || 0;
+    var discount = row.querySelector('input[name="discount"]').value || 0;
+
+    var total = (quantity * price) + (quantity * price * (tax / 100)) - discount;
+    row.querySelector('input[name="total_amount"]').value = total;
+
+    updateGrandTotal();
+  }
+
+  function updateGrandTotal() {
+    var table = document.getElementById("itemTable");
+    var rows = table.rows;
+    var grandTotal = 0;
+    for (var i = 0; i < rows.length - 1; i++) {
+      var total = parseFloat(rows[i].querySelector('input[name="total_amount"]').value) || 0;
+      grandTotal += total;
+    }
+    document.getElementById('grandTotal').textContent = grandTotal;
   }
 </script>
 {% endblock %}

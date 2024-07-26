@@ -47,7 +47,31 @@ def store_dashboardd(request):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="store_login")
 def store_billingg(request):
-    return render(request, 'store_billing.html')
+    product_list = Product.objects.all()
+    print(product_list)
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        print(name)
+        phone = request.POST.get('number')
+        print(phone)
+        order_id = request.POST.get('order_id')
+        print(order_id)
+        date = request.POST.get('date')
+        print(date)
+        product_name = request.POST.get('product_name')
+        print(product_name)
+        quantity = request.POST.get('quantity')
+        print(quantity)
+        price = request.POST.get('price')
+        print(price)
+        tax = request.POST.get('tax')
+        print(tax)
+        discount = request.POST.get('discount')
+        print(discount)
+        total_amount = request.POST.get('total')
+        print(total_amount)
+
+    return render(request, 'store_billing.html', {'product_list':product_list})
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
