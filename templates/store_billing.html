@@ -1,11 +1,15 @@
 {% extends "store_base.html" %}
 {% load static %}
 {% block title %}Billing{% endblock %}
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Toastr CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
 {% block content %}
 <main id="main" class="main">
   <div class="container">
     <h2 class="text-center">Best Buy</h2>
-    <form action="" method="POST">
+    <form action="" method="POST" id="billingForm">
       {% csrf_token %}
       
       <!-- Flexbox for Name and Phone No -->
@@ -50,6 +54,7 @@
             class="form-control"
             name="date"
             id="billDate"
+            required
           />
         </div>
       </div>
@@ -184,19 +189,61 @@
   });
 
   // Serialize product data into hidden field before form submission
-  document.querySelector('form').addEventListener('submit', function() {
+  document.getElementById('billingForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    let name = document.getElementById("party").value.trim();
+    let phoneNumber = document.getElementById("phoneNo").value.trim();
+    let date = document.getElementById("billDate").value;
     let productData = [];
+
+    // Validation
+    if (name.length < 3 || /\s/.test(name)) {
+        console.log("Validation error: Name invalid");
+        toastr.error("Name must be at least 3 letters and cannot contain spaces.");
+        return;
+    }
+
+    if (!/^\d{10}$/.test(phoneNumber)) {
+        console.log("Validation error: Phone number invalid");
+        toastr.error("Phone number must be 10 digits with no symbols or characters.");
+        return;
+    }
+
+    if (!date) {
+        console.log("Validation error: Date not selected");
+        toastr.error("Please select a valid date.");
+        return;
+    }
+
+    let valid = true;
     document.querySelectorAll("#productTable tbody tr").forEach(row => {
-      productData.push({
-        id: row.getAttribute('data-id'),
-        quantity: row.querySelector(".quantity").value,
-        tax: row.querySelector(".tax").value,
-        discount: row.querySelector(".discount").value,
-      });
+        let quantity = parseInt(row.querySelector(".quantity").value);
+        if (quantity <= 0) {
+            console.log("Validation error: Quantity invalid");
+            toastr.error("Quantity must be greater than zero.");
+            valid = false;
+            return; // Exit the loop
+        }
+        productData.push({
+            id: row.getAttribute('data-id'),
+            quantity: row.querySelector(".quantity").value,
+            tax: row.querySelector(".tax").value,
+            discount: row.querySelector(".discount").value,
+        });
     });
+
+    if (!valid) return; // Stop form submission if validation failed
+
     document.getElementById('productData').value = JSON.stringify(productData);
-  });
+
+    // Proceed with form submission
+    this.submit();
+    toastr.success("Form submitted successfully!");
+});
+
 </script>
-<script src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<!-- Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 {% endblock %}

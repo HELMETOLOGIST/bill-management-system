@@ -3,68 +3,66 @@
 {% block title %}Sales Report{% endblock %}
 {% block content  %}
 
-  <main id="main" class="main">
-    <section class="section">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="card">
-            <div class="card-body">
-              <h3 class="card-title">Sales Report</h3>
-              <!-- Table with stripped rows -->
-              <div class="table-responsive">
+<main id="main" class="main">
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title">Sales Report</h3>
+            <div class="table-responsive">
               <table class="table datatable">
                 <thead>
                   <div class="container">
-                        <div class="row">
-                          <form action="" method="GET">
-                            <div class="button-container">
-                            <a class="btn btn-primary btn-responsive" href="">Download As PDF</a>
-                            <a class="btn btn-success btn-responsive" href="">Download As EXEL</a>
+                    <div class="row">
+                      <form action="" method="GET">
+                        <div class="button-container">
+                          <!-- Updated URLs -->
+                          <a class="btn btn-primary btn-responsive" href="{% url 'pdf_download' %}?start_date={{ request.GET.start_date }}&end_date={{ request.GET.end_date }}">Download As PDF</a>
+                          <a class="btn btn-success btn-responsive" href="{% url 'download_exel' %}?start_date={{ request.GET.start_date }}&end_date={{ request.GET.end_date }}">Download As EXEL</a>
                         </div>
-                            <div class="d-flex gap-2">
-                              {% csrf_token %}
-                              <div class="col-md-5">
-                                  <label for="start-date">Start Date:</label>
-                                  <input type="date" id="start-date" name="start_date" class="form-control">
-                              </div>
-                              <div class="col-md-5">
-                                <label for="end-date">End Date:</label>
-                                <input type="date" id="end-date" name="end_date" class="form-control">
-                              </div>
-                              <button type="submit" class="btn btn-primary mt-4 col-md-2 ">Submit</button>
-                            </div>
-                            <br>
+                        <div class="d-flex gap-2">
+                          {% csrf_token %}
+                          <div class="col-md-5">
+                            <label for="start-date">Start Date:</label>
+                            <input type="date" id="start-date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
                           </div>
-                        </form>
-                      </div>
-                        <tr>
-                          <th scope="col">ID</th>
-                          <th scope="col">DATE</th>
-                          <th scope="col">ORDER ID</th>
-                          <th scope="col">USER</th>
-                          <th scope="col">PRODUCT</th>
-                          <th scope="col">TOTAL PRICE</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% for pro in items %}
-                        <tr>
-                          <th scope="row">{{pro.id}}</th>
-                          <td>{{pro.modified_time.date}}</td>
-                          <td>{{pro.order.order_id}}</td>
-                          <td>{{pro.order.address.name}}</td>
-                          <td>{{pro.variant.product.products_name}} <span class="text-danger"> x </span> {{pro.quantity}} </td>
-                          <td>$ {{pro.order.total_price}}</td> 
-                        </tr>
-                        {% endfor %}
-                    </table>
-                  </div>
-                    <!-- End Table with stripped rows -->
-                  </div>
-                </div>
+                          <div class="col-md-5">
+                            <label for="end-date">End Date:</label>
+                            <input type="date" id="end-date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+                          </div>
+                          <button type="submit" class="btn btn-primary mt-4 col-md-2">Submit</button>
+                        </div>
+                        <br>
+                      </form>
+                    </div>
+                    <tr>
+                      <th scope="col">ID</th>
+                      <th scope="col">DATE</th>
+                      <th scope="col">ORDER ID</th>
+                      <th scope="col">USER</th>
+                      <th scope="col">PRODUCT</th>
+                      <th scope="col">TOTAL PRICE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for pro in items %}
+                    <tr>
+                      <th scope="row">{{ pro.id }}</th>
+                      <td>{{ pro.order.date }}</td>
+                      <td>{{ pro.order.order_id }}</td>
+                      <td>{{ pro.order.customer.name }}</td>
+                      <td>{{ pro.product.name }} <span class="text-danger"> x </span> {{ pro.quantity }} </td>
+                      <td>$ {{ pro.total_amount }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
               </div>
             </div>
-          </section>
-
-  </main><!-- End #main -->
-  {% endblock %}
+          </div>
+        </div>
+      </div>
+    </section>
+</main>
+{% endblock %}

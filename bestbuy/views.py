@@ -13,6 +13,21 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from decimal import Decimal
+import xlwt
+from datetime import date, datetime
+import datetime
+from datetime import timedelta
+from django.http import HttpResponse
+from io import BytesIO
+from xhtml2pdf import pisa
+from django.template.loader import get_template
+from django.views import View
+from .utils import render_to_pdf
+from django.utils.decorators import method_decorator
+from django.db.models import Sum, Count
+import json
+from datetime import datetime, timedelta, date
+from django.utils import timezone
 
 
 
@@ -47,7 +62,74 @@ def admin_logoutt(request):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="store_login")
 def store_dashboardd(request):
-    return render(request, 'store_dashboard.html')
+    filter_value = request.GET.get('filter_value')  # 'today', 'this_month', or 'this_year'
+    end_time = datetime.now()
+
+    if filter_value == 'today':
+        start_time = end_time - timedelta(days=1)
+    elif filter_value == 'this_month':
+        start_time = end_time.replace(day=1)
+    elif filter_value == 'this_year':
+        start_time = end_time.replace(month=1, day=1)
+    else:
+        start_time = end_time - timedelta(days=1)
+
+    # Adjusting for `DateField`
+    orders = Order.objects.filter(date__range=[start_time, end_time])
+    revenue = orders.aggregate(total_revenue=Sum('total_amount'))['total_revenue']
+    customers = Customer.objects.filter(order__in=orders).distinct().count()
+
+    # Recent activity: fetch the latest customers
+    recent_customers = Customer.objects.all().order_by('-date')[:5]
+
+    # Line chart data for the last 7 days
+    chart_end_time = datetime.now()
+    weekday_orders = []
+
+    for days_ago in range(6, -1, -1):
+        start_date = chart_end_time - timedelta(days=days_ago + 1)
+        end_date = start_date + timedelta(days=1)
+        day_orders = OrderItem.objects.filter(order__date__range=(start_date, end_date)).count()
+        weekday_orders.append({'date': start_date.strftime("%A"), 'count': day_orders})
+
+    # Monthly and yearly data
+    month_orders = []
+    for month in range(1, 13):
+        start_date = date(chart_end_time.year, month, 1)
+        if month == 12:
+            end_date = date(chart_end_time.year + 1, 1, 1)
+        else:
+            end_date = date(chart_end_time.year, month + 1, 1)
+        month_orders.append({'date': start_date.strftime("%B"), 'count': OrderItem.objects.filter(order__date__range=(start_date, end_date)).count()})
+    month_orders.reverse()
+
+    year_orders = []
+    for year in range(2024, 2018, -1):
+        year_orders.append({'date': year, 'count': OrderItem.objects.filter(order__date__year=year).count()})
+    year_orders.reverse()
+
+    # Order counts for the selected time range
+    orders_chart = Order.objects.filter(date__range=[start_time, end_time])
+    order_counts = {
+        'day': orders_chart.filter(date=end_time.date()).count(),
+        'month': orders_chart.filter(date__month=end_time.month).count(),
+        'year': orders_chart.filter(date__year=end_time.year).count(),
+    }
+
+    # Payment method and category data for charts
+
+    context = {
+        'revenue': revenue,
+        'customers': customers,
+        'orders': orders.count(),
+        'recent_customers': recent_customers,
+        'order_counts': order_counts,
+        'weekday_orders_json': json.dumps(weekday_orders),
+        'month_orders_json': json.dumps(month_orders),
+        'year_orders_json': json.dumps(year_orders),
+    }
+
+    return render(request, 'store_dashboard.html', context)
 
 
 @csrf_exempt
@@ -237,7 +319,151 @@ def store_items_delete(request, id):
     return redirect('store_items')
 
 
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def store_reportt(request):
-    return render(request, 'store_report.html')
+    # Get start_date and end_date from request parameters
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    # Initialize a queryset with all OrderItems
+    items = OrderItem.objects.all().order_by("-order__date")
+
+    # Check if start_date and end_date are provided for filtering
+    if start_date and end_date:
+        # Filter orders based on the provided date range
+        items = items.filter(order__date__range=[start_date, end_date])
+
+    context = {
+        'items': items,
+    }
+
+    return render(request, 'store_report.html', context)
+
+
+
+def excel_report(request):
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = (
+        "attachment; filename=SalesReport-" + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) + ".xls"
+    )
+    
+    work_b = xlwt.Workbook(encoding="utf-8")
+    work_s = work_b.add_sheet("SalesReport")
+    
+    row_num = 0
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+    
+    # Define the columns for the Excel report
+    columns = [
+        "Order ID",
+        "Customer Name",
+        "Order Date",
+        "Product Name",
+        "Quantity",
+        "Unit Price",
+        "Tax",
+        "Discount",
+        "Total Amount",
+    ]
+    
+    # Write the column headers
+    for column_num in range(len(columns)):
+        work_s.write(row_num, column_num, columns[column_num], font_style)
+    
+    font_style = xlwt.XFStyle()
+
+    # Date filters
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    if not start_date:
+        start_date = datetime.now() - timedelta(days=3 * 365)  # Default to 3 years ago
+
+    if not end_date:
+        end_date = datetime.now()
+
+    # Query orders and related data
+    orders = (
+        Order.objects.filter(date__range=[start_date, end_date])
+        .select_related("customer")
+        .prefetch_related("items__product")
+        .order_by("-date")
+    )
+    
+    total_sum = 0  # Variable to hold the total amount sum
+
+    # Iterate over orders and write data to the Excel sheet
+    for order in orders:
+        for item in order.items.all():
+            row_num += 1
+            work_s.write(row_num, 0, order.order_id, font_style)
+            work_s.write(row_num, 1, order.customer.name, font_style)
+            work_s.write(row_num, 2, order.date.strftime('%Y-%m-%d'), font_style)
+            work_s.write(row_num, 3, item.product.name, font_style)
+            work_s.write(row_num, 4, item.quantity, font_style)
+            work_s.write(row_num, 5, item.price, font_style)
+            work_s.write(row_num, 6, item.tax, font_style)
+            work_s.write(row_num, 7, item.discount, font_style)
+            work_s.write(row_num, 8, item.total_amount, font_style)
+            
+            total_sum += item.total_amount  # Add the total amount to the sum
+    
+    # Write the total amount sum to a new row
+    row_num += 1
+    work_s.write(row_num, 8, 'Total Sum', font_style)  # Label for the sum
+    work_s.write(row_num, 9, total_sum, font_style)  # Total amount sum
+    
+    # Save the workbook
+    work_b.save(response)
+
+    return response
+
+
+
+class DownloadPDF(View):
+    def get(self, request, *args, **kwargs):
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        now = datetime.now()
+
+        if not start_date:
+            start_date = now - timedelta(days=3 * 365)  # Default to 3 years ago
+
+        if not end_date:
+            end_date = now
+
+        # Query orders and related data
+        orders = Order.objects.filter(date__range=[start_date, end_date]).order_by("-date")
+        order_items = OrderItem.objects.filter(order__in=orders)
+
+        # Calculate the total amount for all order items
+        total_price = sum(item.total_amount for item in order_items)
+
+        # Prepare context data
+        data = {
+            "company": "Best Buy",
+            "address": "Address Placeholder",  # Update with actual data if needed
+            "city": "Palakkad",
+            "state": "Kerala",
+            "zipcode": "673006",
+            "orders": orders,
+            "order_items": order_items,
+            "phone": "Phone Placeholder",  # Update with actual data if needed
+            "email": "example@mail.com",
+            "website": "example.com",
+            "total_price": total_price,  # Total amount for the PDF
+        }
+
+        pdf = render_to_pdf("store_report_pdf.html", data)
+
+        if pdf:
+            response = HttpResponse(pdf, content_type="application/pdf")
+            filename = f"Sales_report_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
+            content = f"attachment; filename={filename}"
+            response["Content-Disposition"] = content
+            return response
+
+        return HttpResponse("Error generating PDF", status=500)

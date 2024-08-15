@@ -12,4 +12,6 @@ urlpatterns = [
     path('store_report/', views.store_reportt, name='store_report'),
     path('admin_logout', views.admin_logoutt, name='admin_logout'),
     path('store_pdf/', views.store_pdff, name='store_pdf'),
+    path('download_exel/', views.excel_report, name="download_exel"), 
+    path('pdf_download/', views.DownloadPDF.as_view(), name='pdf_download'),
 ]

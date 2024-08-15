@@ -6,8 +6,8 @@
 <main id="main" class="main">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" />
   <style>
+    /* Hide everything except the invoice when printing */
     @media print {
-      /* Hide everything except the invoice */
       body * {
         visibility: hidden;
       }
@@ -21,8 +21,13 @@
         left: 0;
         top: 0;
       }
+      
+      .btn-print, .btn-download {
+        display: none;
+      }
     }
 
+    /* General styles */
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f7f6;
@@ -217,6 +222,9 @@
   <script>
     $(document).ready(function() {
       $('#invoice_download_btn').on('click', function () {
+        // Load jsPDF using the correct namespace
+        const { jsPDF } = window.jspdf;
+        
         html2canvas($('#invoice_wrapper')[0], {
           allowTaint: true,
           useCORS: true,
