@@ -1,0 +1,245 @@
+{% extends "store_base.html" %}
+{% load static %}
+{% block title %}PDF{% endblock %}
+{% block content %}
+
+<main id="main" class="main">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" />
+  <style>
+    @media print {
+      /* Hide everything except the invoice */
+      body * {
+        visibility: hidden;
+      }
+      
+      #invoice_wrapper, #invoice_wrapper * {
+        visibility: visible;
+      }
+      
+      #invoice_wrapper {
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .invoice-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 20px;
+    }
+
+    .invoice-header img {
+      max-width: 150px;
+    }
+
+    .invoice-header h1 {
+      font-size: 24px;
+      margin: 0;
+    }
+
+    .invoice-details {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .invoice-details .invoice-to,
+    .invoice-details .invoice-from {
+      width: 45%;
+    }
+
+    .invoice-details h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+
+    .invoice-details p {
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .invoice-items {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .invoice-items th,
+    .invoice-items td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .invoice-items th {
+      background-color: #f4f4f4;
+    }
+
+    .invoice-items tfoot td {
+      font-weight: bold;
+    }
+
+    .invoice-footer {
+      margin-top: 20px;
+      border-top: 2px solid #eee;
+      padding-top: 20px;
+    }
+
+    .invoice-footer .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-print {
+      background-color: #28a745;
+    }
+
+    .btn-download {
+      background-color: #007bff;
+    }
+
+    @media print {
+      .btn {
+        display: none;
+      }
+    }
+  </style>
+  
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body" id="invoice_wrapper">
+            <div class="invoice-header">
+              <img src="{% static 'assets_home/img/logo.png' %}" alt="Company Logo">
+              <h1>Invoice</h1>
+            </div>
+
+            <div class="invoice-details">
+              <div class="invoice-to">
+                <h2>Bill To</h2>
+                <p>{{ order.customer.name }}</p>
+                <p>{{ order.customer.address }}</p>
+                <p>{{ order.customer.phone }}</p>
+              </div>
+              <div class="invoice-from">
+                <h2>Invoice From</h2>
+                <p>Your Company</p>
+                <p>123 Company Address, City, State, ZIP</p>
+                <p>Email: contact@company.com</p>
+                <p>Phone: (123) 456-7890</p>
+              </div>
+            </div>
+            
+            <table class="invoice-items">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Item</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                  <th>Tax</th>
+                  <th>Discount</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in order_items %}
+                <tr>
+                  <td>{{ item.id }}</td>
+                  <td>{{ item.product.name }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>$ {{ item.price }}</td>
+                  <td>$ {{ item.tax }}</td>
+                  <td>$ {{ item.discount }}</td>
+                  <td>$ {{ item.total_amount }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="6">Subtotal</td>
+                  <td>$ {{ order.subtotal }}</td>
+                </tr>
+                <tr>
+                  <td colspan="6">Discount</td>
+                  <td>$ {{ order.discount }}</td>
+                </tr>
+                <tr>
+                  <td colspan="6">Tax</td>
+                  <td>$ {{ order.tax }}</td>
+                </tr>
+                <tr>
+                  <td colspan="6">Total</td>
+                  <td>$ {{ order.total_amount }}</td>
+                </tr>
+              </tfoot>
+            </table>
+            
+            <div class="invoice-footer">
+              <a href="javascript:window.print()" class="btn btn-print"><i class="fa fa-print"></i> Print</a>
+              <a href="javascript:void(0)" id="invoice_download_btn" class="btn btn-download"><i class="fa fa-download"></i> Download</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.0.0/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#invoice_download_btn').on('click', function () {
+        html2canvas($('#invoice_wrapper')[0], {
+          allowTaint: true,
+          useCORS: true,
+        }).then(function (canvas) {
+          const imgData = canvas.toDataURL('image/jpeg');
+          const pdf = new jsPDF('p', 'pt', 'a4');
+          const imgWidth = 210; // A4 width in mm
+          const pageHeight = 295; // A4 height in mm
+          const imgHeight = canvas.height * imgWidth / canvas.width;
+          let heightLeft = imgHeight;
+
+          pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+
+          while (heightLeft >= 0) {
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 0, heightLeft - imgHeight, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+          }
+          pdf.save('invoice.pdf');
+        });
+      });
+    });
+  </script>
+</main>
+{% endblock %}

@@ -11,4 +11,5 @@ urlpatterns = [
     path('store_items/store_items_delete/<str:id>/', views.store_items_delete, name='store_items_delete'),
     path('store_report/', views.store_reportt, name='store_report'),
     path('admin_logout', views.admin_logoutt, name='admin_logout'),
+    path('store_pdf/', views.store_pdff, name='store_pdf'),
 ]
