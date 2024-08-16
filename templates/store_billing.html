@@ -1,10 +1,26 @@
 {% extends "store_base.html" %}
 {% load static %}
 {% block title %}Billing{% endblock %}
+
 <!-- jQuery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- jQuery Validation CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.css" rel="stylesheet"/>
+<!-- jQuery Validation JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 <!-- Toastr CSS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+<!-- Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<!-- Custom CSS for validation error message -->
+<style>
+  label.error {
+    color: red;
+    font-weight: bold;
+  }
+</style>
+
 {% block content %}
 <main id="main" class="main">
   <div class="container">
@@ -64,8 +80,15 @@
         <select id="productSelect" class="form-control" data-live-search="true">
           <option value="">-- Select Product --</option>
           {% for product in product_list %}
-            <option value="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.price }}">
+            <option 
+              value="{{ product.id }}" 
+              data-name="{{ product.name }}" 
+              data-price="{{ product.price }}"
+              data-stock="{{ product.stock }}"
+              {% if product.stock <= 0 %} disabled style="color: grey;" {% endif %}
+            >
               {{ product.name }} - ${{ product.price }}
+              {% if product.stock <= 0 %} (Out of Stock) {% endif %}
             </option>
           {% endfor %}
         </select>
@@ -106,144 +129,188 @@
 </main>
 
 <script>
-  let productTableBody = document.querySelector("#productTable tbody");
-  let grandTotalElement = document.getElementById("grandTotal");
-  let rowIndex = 1; // Initialize row index
+$(document).ready(function() {
+  // Stock tracking object
+  let stock = {};
 
+  // Function to update stock
+  function updateStock(productId, quantityChange) {
+    if (!stock[productId]) {
+      // Initialize stock if not present
+      let productStock = parseInt($(`#productSelect option[value="${productId}"]`).data('stock'));
+      stock[productId] = productStock;
+    }
+    stock[productId] -= quantityChange;
+  }
+
+  // Custom validation method to prevent spaces in name
+  $.validator.addMethod("noSpace", function(value, element) {
+    return value.indexOf(" ") < 0;
+  }, "Spaces are not allowed.");
+
+  // Custom validation method to check for products in the table
+  $.validator.addMethod("productsAdded", function(value, element) {
+    return $("#productTable tbody tr").length > 0;
+  }, "At least one product must be added.");
+
+  // Initialize jQuery Validation
+  $("#billingForm").validate({
+    rules: {
+      name: {
+        required: true,
+        minlength: 3,
+        noSpace: true
+      },
+      number: {
+        required: true,
+        digits: true,
+        minlength: 10,
+        maxlength: 10
+      },
+      date: {
+        required: true
+      },
+      product_data: {
+        productsAdded: true
+      }
+    },
+    messages: {
+      name: {
+        required: "Name is required",
+        minlength: "Name must be at least 3 letters",
+        noSpace: "Name cannot contain spaces"
+      },
+      number: {
+        required: "Phone number is required",
+        digits: "Phone number must be 10 digits",
+        minlength: "Phone number must be 10 digits",
+        maxlength: "Phone number must be 10 digits"
+      },
+      date: {
+        required: "Bill date is required"
+      },
+      product_data: {
+        productsAdded: "At least one product must be added."
+      }
+    },
+    submitHandler: function(form) {
+      let productData = [];
+      let valid = true;
+
+      // Collect product data
+      $("#productTable tbody tr").each(function() {
+        let quantity = parseInt($(this).find(".quantity").val());
+        if (quantity <= 0) {
+          toastr.error("Quantity must be greater than zero.");
+          valid = false;
+          return false; // Exit the loop
+        }
+        productData.push({
+          id: $(this).data('id'),
+          quantity: $(this).find(".quantity").val(),
+          tax: $(this).find(".tax").val(),
+          discount: $(this).find(".discount").val(),
+        });
+      });
+
+      if (!valid) return;
+
+      $("#productData").val(JSON.stringify(productData));
+      toastr.success("Form submitted successfully!");
+      form.submit(); // Proceed with form submission
+    }
+  });
+
+  // Update total amount when product quantity, tax, or discount changes
   function updateTotalAmount() {
     let totalAmount = 0;
-    document.querySelectorAll("#productTable tbody tr").forEach(row => {
-      totalAmount += parseFloat(row.querySelector(".total").textContent);
+    $("#productTable tbody tr").each(function() {
+      totalAmount += parseFloat($(this).find(".total").text());
     });
-    grandTotalElement.textContent = totalAmount.toFixed(2);
+    $("#grandTotal").text(totalAmount.toFixed(2));
   }
 
   function calculateRowTotal(row) {
-    let quantity = row.querySelector(".quantity").value;
-    let price = row.querySelector(".price").textContent;
-    let tax = row.querySelector(".tax").value;
-    let discount = row.querySelector(".discount").value;
+    let quantity = $(row).find(".quantity").val();
+    let price = $(row).find(".price").text();
+    let tax = $(row).find(".tax").val();
+    let discount = $(row).find(".discount").val();
 
     let total = quantity * price;
     total += total * (tax / 100);
     total -= total * (discount / 100);
 
-    row.querySelector(".total").textContent = total.toFixed(2);
+    $(row).find(".total").text(total.toFixed(2));
   }
 
-  document.getElementById('productSelect').addEventListener('change', function() {
+  $("#productSelect").change(function() {
     let selectedOption = this.options[this.selectedIndex];
     if (!selectedOption.value) return;
 
     let productId = selectedOption.value;
     let productName = selectedOption.getAttribute('data-name');
-    let productPrice = selectedOption.getAttribute('data-price');
+    let productPrice = parseFloat(selectedOption.getAttribute('data-price'));
+    let productStock = parseInt(selectedOption.getAttribute('data-stock'));
 
-    let existingRow = document.querySelector(`#productTable tbody tr[data-id="${productId}"]`);
-    if (existingRow) {
-      let quantityInput = existingRow.querySelector(".quantity");
-      quantityInput.value = parseInt(quantityInput.value) + 1;
-      calculateRowTotal(existingRow);
+    if (productStock <= 0) {
+      toastr.error("Product is out of stock.");
+      return;
+    }
+
+    let existingRow = $(`#productTable tbody tr[data-id="${productId}"]`);
+    if (existingRow.length) {
+      let quantityInput = existingRow.find(".quantity");
+      let newQuantity = parseInt(quantityInput.val()) + 1;
+
+      // Check stock availability via AJAX
+      $.get(`/check_stock/?product_id=${productId}&quantity=${newQuantity}`, function(data) {
+        if (!data.in_stock) {
+          toastr.error("Not enough stock available.");
+          quantityInput.val(parseInt(quantityInput.val()));
+          return;
+        }
+
+        quantityInput.val(newQuantity);
+        calculateRowTotal(existingRow);
+        updateTotalAmount();
+        updateStock(productId, 1);
+      });
     } else {
-      let newRow = document.createElement("tr");
-      newRow.setAttribute("data-id", productId);
-      newRow.innerHTML = `
-        <td>${rowIndex++}</td> <!-- Sequential index -->
+      let newRow = `<tr data-id="${productId}">
+        <td>${productId}</td>
         <td>${productName}</td>
         <td><input type="number" class="form-control quantity" value="1" min="1" /></td>
-        <td class="price">${productPrice}</td>
+        <td class="price">${productPrice.toFixed(2)}</td>
         <td><input type="number" class="form-control tax" value="0" min="0" /></td>
         <td><input type="number" class="form-control discount" value="0" min="0" /></td>
-        <td class="total">${productPrice}</td>
+        <td class="total">${productPrice.toFixed(2)}</td>
         <td><button type="button" class="btn btn-danger remove-product">Remove</button></td>
-      `;
-      productTableBody.appendChild(newRow);
-      calculateRowTotal(newRow);
+      </tr>`;
+
+      $("#productTable tbody").append(newRow);
+      updateTotalAmount();
+      updateStock(productId, 1);
     }
 
+    $(this).val(''); // Clear selection
+  });
+
+  // Remove product row
+  $(document).on('click', '.remove-product', function() {
+    let productId = $(this).closest('tr').data('id');
+    let quantity = parseInt($(this).closest('tr').find('.quantity').val());
+    $(this).closest('tr').remove();
     updateTotalAmount();
-
-    // Reset select
-    this.selectedIndex = 0;
+    updateStock(productId, -quantity);
   });
 
-  productTableBody.addEventListener('input', function(e) {
-    if (e.target.classList.contains("quantity") || e.target.classList.contains("tax") || e.target.classList.contains("discount")) {
-      let row = e.target.closest("tr");
-      calculateRowTotal(row);
-      updateTotalAmount();
-    }
+  // Update total and stock on quantity change
+  $(document).on('input', '.quantity, .tax, .discount', function() {
+    let row = $(this).closest('tr');
+    calculateRowTotal(row);
+    updateTotalAmount();
   });
 
-  productTableBody.addEventListener('click', function(e) {
-    if (e.target.classList.contains("remove-product")) {
-      let row = e.target.closest("tr");
-      row.remove();
-      updateTotalAmount();
-      // Re-index remaining rows
-      rowIndex = 1;
-      document.querySelectorAll("#productTable tbody tr").forEach(row => {
-        row.querySelector("td:first-child").textContent = rowIndex++;
-      });
-    }
-  });
-
-  // Serialize product data into hidden field before form submission
-  document.getElementById('billingForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    let name = document.getElementById("party").value.trim();
-    let phoneNumber = document.getElementById("phoneNo").value.trim();
-    let date = document.getElementById("billDate").value;
-    let productData = [];
-
-    // Validation
-    if (name.length < 3 || /\s/.test(name)) {
-        console.log("Validation error: Name invalid");
-        toastr.error("Name must be at least 3 letters and cannot contain spaces.");
-        return;
-    }
-
-    if (!/^\d{10}$/.test(phoneNumber)) {
-        console.log("Validation error: Phone number invalid");
-        toastr.error("Phone number must be 10 digits with no symbols or characters.");
-        return;
-    }
-
-    if (!date) {
-        console.log("Validation error: Date not selected");
-        toastr.error("Please select a valid date.");
-        return;
-    }
-
-    let valid = true;
-    document.querySelectorAll("#productTable tbody tr").forEach(row => {
-        let quantity = parseInt(row.querySelector(".quantity").value);
-        if (quantity <= 0) {
-            console.log("Validation error: Quantity invalid");
-            toastr.error("Quantity must be greater than zero.");
-            valid = false;
-            return; // Exit the loop
-        }
-        productData.push({
-            id: row.getAttribute('data-id'),
-            quantity: row.querySelector(".quantity").value,
-            tax: row.querySelector(".tax").value,
-            discount: row.querySelector(".discount").value,
-        });
-    });
-
-    if (!valid) return; // Stop form submission if validation failed
-
-    document.getElementById('productData').value = JSON.stringify(productData);
-
-    // Proceed with form submission
-    this.submit();
-    toastr.success("Form submitted successfully!");
 });
-
 </script>
-<!-- Toastr JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
 {% endblock %}

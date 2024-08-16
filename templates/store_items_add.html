@@ -1,7 +1,7 @@
 {% extends "store_base.html" %}
 {% load static %}
 {% block title %}Add Product{% endblock %}
-{% block content  %}
+{% block content %}
 
 <main id="main" class="main">
   <div class="col-lg-12">
@@ -44,36 +44,70 @@
 </script>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
 <script>
   $(document).ready(function () {
     $("#productForm").validate({
       rules: {
-        products_name: {
+        product_name: {
           required: true,
-          minlength: 3,
-          noConsecutiveSpaces: true
+          minlength: 3
+        },
+        stock: {
+          required: true,
+          digits: true
+        },
+        price: {
+          required: true,
+          digits: true
         },
       },
       messages: {
-        products_name: {
+        product_name: {
           required: "Please enter the product name",
-          minlength: "Product name must be at least 3 characters long",
-          noConsecutiveSpaces: "Product name cannot contain 2 consecutive spaces"
+          minlength: "Product name must be at least 3 characters long"
         },
+        stock: {
+          required: "Please enter the stock quantity",
+          digits: "Stock must be an integer"
+        },
+        price: {
+          required: "Please enter the product price",
+          digits: "Price must be an integer"
+        }
       },
       errorClass: "is-invalid",
       errorPlacement: function (error, element) {
         error.addClass("invalid-feedback");
         error.insertAfter(element);
+      },
+      submitHandler: function (form) {
+        $.ajax({
+          url: $(form).attr('action'),
+          method: $(form).attr('method'),
+          data: $(form).serialize(),
+          success: function (response) {
+            if (response.success) {
+              Toastify({
+                text: "Product added successfully",
+                backgroundColor: "green",
+                close: true,
+              }).showToast();
+              form.reset();
+            } else if (response.duplicate) {
+              Toastify({
+                text: "Product with the same name already exists",
+                backgroundColor: "red",
+                close: true,
+              }).showToast();
+            }
+          }
+        });
       }
     });
-
-    // Custom validation method
-    $.validator.addMethod("noConsecutiveSpaces", function (value, element) {
-      return !/\s{2,}/.test(value);
-    }, "Product name cannot contain more than 2 consecutive spaces");
   });
 </script>
 

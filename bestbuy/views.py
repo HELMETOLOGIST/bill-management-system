@@ -28,7 +28,8 @@ from django.db.models import Sum, Count
 import json
 from datetime import datetime, timedelta, date
 from django.utils import timezone
-
+from django.http import JsonResponse
+from django.contrib import messages
 
 
 # Create your views here.
@@ -151,6 +152,14 @@ def store_billingg(request):
                 discount = float(data.get('discount'))
                 product = Product.objects.get(id=product_id)
 
+                # Check if the product is in stock
+                if product.stock <= 0:
+                    return JsonResponse({'status': 'error', 'message': 'Product is out of stock'})
+
+                # Check if the requested quantity is available
+                if product.stock < quantity:
+                    return JsonResponse({'status': 'error', 'message': 'Not enough stock available'})
+
                 # Convert values to Decimal for calculation
                 price = Decimal(product.price)
                 quantity = Decimal(quantity)
@@ -236,7 +245,26 @@ def store_billingg(request):
             # Redirect to store_pdf after successful order
             return redirect('store_pdf')
 
+    in_stock_products = product_list.filter(stock__gt=0)
+
     return render(request, 'store_billing.html', {'product_list': product_list, 'order_id': order_id})
+
+
+@csrf_exempt
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+def check_stock(request):
+    if request.method == 'GET':
+        product_id = request.GET.get('product_id')
+        quantity = int(request.GET.get('quantity'))
+        product = Product.objects.get(id=product_id)
+
+        if product.stock >= quantity:
+            return JsonResponse({'in_stock': True})
+        else:
+            return JsonResponse({'in_stock': False})
+
+
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="store_login")
@@ -274,23 +302,21 @@ def store_items_addd(request):
         product_name = request.POST.get('product_name')
         stock = request.POST.get('stock')
         price = request.POST.get('price')
-        try:
-            existing_product = Product.objects.get(name__iexact=product_name)
-            messages.error(request, 'This product already added')
-            return redirect("store_items_add")
-        except ObjectDoesNotExist:
-            pass
+        
+        # Check if a product with the same name already exists
+        if Product.objects.filter(name__iexact=product_name).exists():
+            return JsonResponse({'duplicate': True})
 
+        # Add the new product
         product = Product(
             name=product_name,
             stock=stock,
             price=price,
         )
         product.save()
-        messages.success(request, 'Product added successfully')
-        return redirect("store_items_add")
-    else:
-        return render(request, 'store_items_add.html')
+        return JsonResponse({'success': True})
+
+    return render(request, 'store_items_add.html')
     
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -302,11 +328,21 @@ def store_items_editt(request, id):
         edit_stock = request.POST.get('stock')
         edit_price = request.POST.get('price')
 
+        # Validation logic
+        if not (edit_name and len(edit_name) >= 3):
+            return JsonResponse({'success': False, 'message': 'Product name must be at least 3 characters long'})
+        if not edit_stock.isdigit():
+            return JsonResponse({'success': False, 'message': 'Stock must be an integer'})
+        if not edit_price.isdigit():
+            return JsonResponse({'success': False, 'message': 'Price must be an integer'})
+
+        # Update the product
         product.name = edit_name
-        product.stock = edit_stock
-        product.price = edit_price
+        product.stock = int(edit_stock)
+        product.price = int(edit_price)
         product.save()
-        return redirect('store_items')
+        return JsonResponse({'success': True, 'message': 'Product updated successfully'})
+    
     return render(request, 'store_items_edit.html', {'product': product})
 
 
@@ -321,7 +357,7 @@ def store_items_delete(request, id):
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
 def store_reportt(request):
     # Get start_date and end_date from request parameters
     start_date = request.GET.get('start_date')
