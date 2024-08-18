@@ -4,8 +4,8 @@ body {
   }
   
   .container {
-    margin-top: 40px;
-    background: #ffffff;
+    margin-bottom: 15px;
+    background: #000000a8;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -14,7 +14,7 @@ body {
   h2 {
     font-size: 1.75rem;
     font-weight: 600;
-    color: #343a40;
+    color: #000000;
     margin-bottom: 20px;
   }
   

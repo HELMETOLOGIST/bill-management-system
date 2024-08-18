@@ -81,7 +81,7 @@ def store_dashboardd(request):
     customers = Customer.objects.filter(order__in=orders).distinct().count()
 
     # Recent activity: fetch the latest customers
-    recent_customers = Customer.objects.all().order_by('-date')[:5]
+    recent_customers = Customer.objects.all().order_by('-date')[:15]
 
     # Line chart data for the last 7 days
     chart_end_time = datetime.now()
@@ -140,6 +140,12 @@ def store_billingg(request):
     product_list = Product.objects.all()
     order_id = str(uuid.uuid4().hex)[:15]
 
+    # Check if the generated order_id already exists in the Order model
+    while Order.objects.filter(order_id=order_id).exists():
+        order_id = str(uuid.uuid4().hex)[:15]  # Regenerate the order_id if it already exists
+
+    gst_applied = False  # Default to False
+
     if request.method == 'POST':
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':  # Check if request is AJAX
             data = json.loads(request.body)
@@ -151,6 +157,7 @@ def store_billingg(request):
                 tax = float(data.get('tax'))
                 discount = float(data.get('discount'))
                 product = Product.objects.get(id=product_id)
+                gst_applied = request.POST.get('gst_applied') == "true"
 
                 # Check if the product is in stock
                 if product.stock <= 0:
@@ -185,24 +192,42 @@ def store_billingg(request):
             date = request.POST.get('date')
             product_data = json.loads(request.POST.get('product_data', '[]'))
 
+            # Set gst_applied to a default value (False) if not provided
+            gst_applied = request.POST.get('gst_applied') == "true"
+            print('gst:', gst_applied)
+
+            # Check if the order_id already exists in the database
+            if Order.objects.filter(order_id=order_id).exists():
+                return JsonResponse({'status': 'error', 'message': 'Order ID already exists'})
+
             # Save Customer
             customer = Customer(name=name, number=phone, order_id=order_id, date=date)
             customer.save()
 
             # Calculate the total amount from product_data before saving the order
             total_amount = Decimal('0.00')
+            subTotal = 0  # Initialize subTotal
             for product in product_data:
                 product_id = product['id']
                 quantity = Decimal(product['quantity'])
                 tax = Decimal(product['tax'])
                 discount = Decimal(product['discount'])
-                
+
                 product_instance = Product.objects.get(id=product_id)
                 price = Decimal(product_instance.price)
 
                 # Calculate item total
                 item_total = (price * quantity) + (price * quantity * (tax / Decimal('100'))) - (price * quantity * (discount / Decimal('100')))
                 total_amount += item_total
+                subTotal += item_total  # Accumulate subTotal
+
+            subAmount = float(subTotal)
+            print(subAmount)
+
+            if gst_applied:
+                gst_rate = Decimal('18.00')  # 18% GST
+                gst_amount = total_amount * (gst_rate / Decimal('100'))
+                total_amount += gst_amount
 
             # Save Order with the calculated total amount
             order = Order(customer=customer, total_amount=total_amount, order_id=order_id, date=date)
@@ -210,6 +235,7 @@ def store_billingg(request):
 
             # Store the order ID in the session
             request.session['order_id'] = order_id
+            request.session['subAmount'] = subAmount
 
             # Move items from product_data to OrderItem and update product quantities
             for product in product_data:
@@ -217,13 +243,13 @@ def store_billingg(request):
                 quantity = Decimal(product['quantity'])
                 tax = Decimal(product['tax'])
                 discount = Decimal(product['discount'])
-                
+
                 product_instance = Product.objects.get(id=product_id)
                 price = Decimal(product_instance.price)
 
                 # Calculate item total
                 item_total = (price * quantity) + (price * quantity * (tax / Decimal('100'))) - (price * quantity * (discount / Decimal('100')))
-                
+
                 order_item = OrderItem(
                     order=order,
                     product=product_instance,
@@ -247,8 +273,7 @@ def store_billingg(request):
 
     in_stock_products = product_list.filter(stock__gt=0)
 
-    return render(request, 'store_billing.html', {'product_list': product_list, 'order_id': order_id})
-
+    return render(request, 'store_billing.html', {'product_list': in_stock_products, 'order_id': order_id})
 
 @csrf_exempt
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -270,6 +295,7 @@ def check_stock(request):
 @user_passes_test(lambda u: u.is_superuser, login_url="store_login")
 def store_pdff(request):
     order_id = request.session.get('order_id')
+    subAmount = request.session.get('subAmount')
     if not order_id:
         # Handle the case where no order ID is found in the session
         return redirect('store_billing')  # Redirect or show an error
@@ -281,8 +307,9 @@ def store_pdff(request):
         
         # Clear the order ID from the session after use
         del request.session['order_id']
+        del request.session['subAmount']
 
-        return render(request, 'store_pdf.html', {'order': order, 'order_items': order_items})
+        return render(request, 'store_pdf.html', {'order': order, 'order_items': order_items, 'subAmount':subAmount})
     except Order.DoesNotExist:
         # Handle the case where the order does not exist
         return render(request, 'store_pdf.html', {'error_message': 'Order does not exist. Please try again.'})
