@@ -157,7 +157,7 @@ def store_billingg(request):
                 tax = float(data.get('tax'))
                 discount = float(data.get('discount'))
                 product = Product.objects.get(id=product_id)
-                gst_applied = request.POST.get('gst_applied') == "true"
+                gst_applied = request.POST.get('gst_applied')
 
                 # Check if the product is in stock
                 if product.stock <= 0:
@@ -193,8 +193,9 @@ def store_billingg(request):
             product_data = json.loads(request.POST.get('product_data', '[]'))
 
             # Set gst_applied to a default value (False) if not provided
-            gst_applied = request.POST.get('gst_applied') == "true"
+            gst_applied = request.POST.get('gst_applied')
             print('gst:', gst_applied)
+            
 
             # Check if the order_id already exists in the database
             if Order.objects.filter(order_id=order_id).exists():
@@ -223,8 +224,8 @@ def store_billingg(request):
 
             subAmount = float(subTotal)
             print(subAmount)
-
-            if gst_applied:
+            print(gst_applied)
+            if gst_applied == 'true':
                 gst_rate = Decimal('18.00')  # 18% GST
                 gst_amount = total_amount * (gst_rate / Decimal('100'))
                 total_amount += gst_amount

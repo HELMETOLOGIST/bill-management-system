@@ -96,7 +96,7 @@
               data-name="{{ product.name }}" 
               data-price="{{ product.price }}"
               data-stock="{{ product.stock }}"
-              {% if product.stock <= 0 %} disabled style="color: grey;" {% endif %}
+              {% if product.stock <= 0 %} disabled style="color: red;" {% endif %}
             >
               {{ product.name }} - ${{ product.price }}
               {% if product.stock <= 0 %} (Out of Stock) {% endif %}
@@ -132,11 +132,10 @@
         <h5 style="color:black;">Total Amount: 
           <span id="totalAmountContainer">$<span id="grandTotal">0.00</span></span>
           <label id="gstToggle">
-            <input type="hidden" name="gst_applied" id="gstApplied" value="true">
-            <input type="checkbox" id="gstCheckbox" checked> Apply GST (18%)
+            <input value="true" name="gst_applied" type="checkbox" id="gstCheckbox" checked> Apply GST (18%)
           </label>
         </h5>
-        <button type="submit" class="btn btn-success mt-5">Save</button>
+        <button type="submit" class="btn btn-success mt-5" id="saveButton">Save</button>
       </div>
       
       <!-- Hidden field for serialized product data -->
@@ -151,27 +150,24 @@ $(document).ready(function() {
   let stock = {};
   let gstRate = 18; // GST rate of 18%
 
-
-  function updateGstApplied() {
-    $("#gstApplied").val($("#gstCheckbox").is(":checked") ? "true" : "false");
+  // Function to update stock tracking object
+  function initializeStock(productId, initialStock) {
+    if (!stock[productId]) {
+      stock[productId] = initialStock;
+    }
   }
 
-  // Call the update function when the checkbox state changes
-  $("#gstCheckbox").change(function() {
-    updateGstApplied();
-    updateTotalAmount();
-  });
-
-  // Initial setup of gst_applied value based on the default checkbox state
-  updateGstApplied();
-
-  // Function to update stock
-  function updateStock(productId, quantityChange) {
-    if (!stock[productId]) {
-      // Initialize stock if not present
-      let productStock = parseInt($(`#productSelect option[value="${productId}"]`).data('stock'));
-      stock[productId] = productStock;
+  // Function to validate stock before adding to cart
+  function validateStock(productId, requestedQuantity) {
+    if (requestedQuantity > stock[productId]) {
+      toastr.error("Insufficient stock for this product.");
+      return false;
     }
+    return true;
+  }
+
+  // Function to update stock when quantity changes
+  function updateStock(productId, quantityChange) {
     stock[productId] -= quantityChange;
   }
 
@@ -253,6 +249,7 @@ $(document).ready(function() {
     }
   });
 
+
   // Update total amount when product quantity, tax, or discount changes
   function updateTotalAmount() {
     let totalAmount = 0;
@@ -268,107 +265,107 @@ $(document).ready(function() {
     $("#grandTotal").text(totalAmount.toFixed(2));
   }
 
-  function calculateRowTotal(row) {
-    let quantity = $(row).find(".quantity").val();
-    let price = $(row).find(".price").text();
-    let tax = $(row).find(".tax").val();
-    let discount = $(row).find(".discount").val();
-
-    let total = quantity * price;
-    total += total * (tax / 100);
-    total -= total * (discount / 100);
-
-    $(row).find(".total").text(total.toFixed(2));
-  }
-
+  // Add product to table with validation
   $("#productSelect").change(function() {
-    let selectedOption = this.options[this.selectedIndex];
-    if (!selectedOption.value) return;
+    const selectedOption = $(this).find("option:selected");
+    const productId = selectedOption.val();
+    const productName = selectedOption.data("name");
+    const productPrice = selectedOption.data("price");
+    const productStock = selectedOption.data("stock");
 
-    let productId = selectedOption.value;
-    let productName = selectedOption.getAttribute("data-name");
-    let productPrice = selectedOption.getAttribute("data-price");
+    if (productId) {
+      initializeStock(productId, productStock);
 
-    // Check if product is already in the table
-    let existingRow = $(`#productTable tbody tr[data-id="${productId}"]`);
-    if (existingRow.length) {
-      let quantityField = existingRow.find(".quantity");
-      let newQuantity = parseInt(quantityField.val()) + 1;
+      let rowExists = false;
 
-      if (newQuantity > stock[productId]) {
-        toastr.error("Insufficient stock for this product.");
+      // Check if the product is already in the table
+      $("#productTable tbody tr").each(function() {
+        const rowProductId = $(this).data("id");
+        if (rowProductId == productId) {
+          rowExists = true;
+          return false;
+        }
+      });
+
+      if (rowExists) {
+        toastr.error("Product is already added.");
         return;
       }
 
-      quantityField.val(newQuantity);
-      calculateRowTotal(existingRow);
-    } else {
-      // Add a new row if product is not in the table
-      let productStock = stock[productId] || parseInt(selectedOption.getAttribute("data-stock"));
-
-      if (productStock <= 0) {
-        toastr.error("Product is out of stock.");
-        return;
-      }
-
-      let newRow = `
+      const newRow = `
         <tr data-id="${productId}">
           <td>${productId}</td>
           <td>${productName}</td>
-          <td><input type="number" class="form-control quantity" value="1" min="1" max="${productStock}"></td>
-          <td class="price">${parseFloat(productPrice).toFixed(2)}</td>
-          <td><input type="number" class="form-control tax" value="0" min="0" max="100"></td>
-          <td><input type="number" class="form-control discount" value="0" min="0" max="100"></td>
-          <td class="total">${parseFloat(productPrice).toFixed(2)}</td>
-          <td><button type="button" class="btn btn-danger btn-sm remove-product">Remove</button></td>
+          <td>
+            <input type="number" class="form-control quantity" value="1" min="1" max="${productStock}" />
+          </td>
+          <td>${productPrice}</td>
+          <td>
+            <input type="number" class="form-control tax" value="0" min="0" max="100" />
+          </td>
+          <td>
+            <input type="number" class="form-control discount" value="0" min="0" max="100" />
+          </td>
+          <td class="total">${productPrice}</td>
+          <td>
+            <button type="button" class="btn btn-danger btn-sm remove-btn">Remove</button>
+          </td>
         </tr>
       `;
-      $("#productTable tbody").append(newRow);
-      updateStock(productId, 1);
-    }
 
-    updateTotalAmount();
+      $("#productTable tbody").append(newRow);
+      toastr.success("Product added successfully!");
+      updateTotalAmount();
+    }
   });
 
-  // Update row total and grand total when quantity, tax, or discount changes
-  $("#productTable").on("input", ".quantity, .tax, .discount", function() {
-    let row = $(this).closest("tr");
-    let productId = row.data("id");
-    let newQuantity = parseInt(row.find(".quantity").val());
-    let oldQuantity = stock[productId] + newQuantity;
+  // Update total and stock when quantity, tax, or discount changes
+  $(document).on("change keyup", ".quantity, .tax, .discount", function() {
+    const row = $(this).closest("tr");
+    const productId = row.data("id");
+    const price = parseFloat(row.find("td:eq(3)").text());
+    const quantity = parseInt(row.find(".quantity").val());
+    const tax = parseFloat(row.find(".tax").val()) || 0;
+    const discount = parseFloat(row.find(".discount").val()) || 0;
 
-    if (newQuantity > oldQuantity) {
-      toastr.error("Insufficient stock for this product.");
-      row.find(".quantity").val(oldQuantity);
+    // Check for stock availability
+    if (!validateStock(productId, quantity)) {
+      row.find(".quantity").val(stock[productId]);
       return;
     }
 
-    updateStock(productId, newQuantity - oldQuantity);
-    calculateRowTotal(row);
+    const totalBeforeTaxDiscount = price * quantity;
+    const totalAfterDiscount = totalBeforeTaxDiscount * (1 - discount / 100);
+    const totalAfterTax = totalAfterDiscount * (1 + tax / 100);
+
+    row.find(".total").text(totalAfterTax.toFixed(2));
     updateTotalAmount();
   });
 
-  // Remove product row and update stock
-  $("#productTable").on("click", ".remove-product", function() {
-    let row = $(this).closest("tr");
-    let productId = row.data("id");
-    let quantity = parseInt(row.find(".quantity").val());
+  // Remove product from table and update total and stock
+  $(document).on("click", ".remove-btn", function() {
+    const row = $(this).closest("tr");
+    const productId = row.data("id");
+    const quantity = parseInt(row.find(".quantity").val());
 
-    updateStock(productId, -quantity);
+    updateStock(productId, -quantity); // Re-add the removed quantity back to stock
     row.remove();
     updateTotalAmount();
   });
 
-  // Toggle GST application
+  // Update total amount when GST toggle is changed
   $("#gstCheckbox").change(function() {
     updateTotalAmount();
   });
 });
 </script>
 <script>
-  // Get today's date in the format YYYY-MM-DD
-  const today = new Date().toISOString().split('T')[0];
-  // Set the value of the date input to today's date
-  document.getElementById('billDate').value = today;
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Set the value of the date input field to today's date
+    document.getElementById('billDate').value = today;
+  });
 </script>
 {% endblock %}
