@@ -136,92 +136,94 @@
 </head>
 <body>
 
-<main id="main" class="main">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-body" id="invoice_wrapper">
-                        <div class="invoice-header mt-3">
-                            <img src="{% static 'assets_admin/img/logo.png' %}" alt="Company Logo">
-                            <h1>Invoice</h1>
-                        </div>
-
-                        <div class="invoice-details">
-                            <div class="invoice-to">
-                                <h2>Bill To</h2>
-                                <p>{{ order.customer.name | upper }}</p>
-                                <p>{{ order.customer.number }}</p>
+    <main id="main" class="main">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body" id="invoice_wrapper">
+                            <div class="invoice-header mt-3">
+                                <img src="{% static 'assets_admin/img/logo.png' %}" alt="Company Logo">
+                                <h1>Invoice</h1>
                             </div>
-                            <div class="invoice-from">
-                                <h2>Invoice From</h2>
-                                <p>Best Buy</p>
-                                <p>KOTHAKURUSSI, Ottapalam - Cherppulassery Rd, near SBI ATM, Kerala 679503</p>
-                                <p>Email: nafsalbabunkm@gmail.com</p>
-                                <p>Phone: +917907970271</p>
-                                <p>GST: GSTIN32AWMPN3899A1ZD</p>
+    
+                            <div class="invoice-details">
+                                <div class="invoice-to">
+                                    <h2>Bill To</h2>
+                                    <p>{{ order.customer.name | upper }}</p>
+                                    <p>{{ order.customer.number }}</p>
+                                </div>
+                                <div class="invoice-from">
+                                    <h2>Invoice From</h2>
+                                    <p>Best Buy</p>
+                                    <p>KOTHAKURUSSI, Ottapalam - Cherppulassery Rd, near SBI ATM, Kerala 679503</p>
+                                    <p>Email: nafsalbabunkm@gmail.com</p>
+                                    <p>Phone: +917907970271</p>
+                                    <p>GST: GSTIN32AWMPN3899A1ZD</p>
+                                </div>
                             </div>
-                        </div>
-
-                        <table class="invoice-items">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Item</th>
-                                    <th>Quantity</th>
-                                    <th>Unit Price</th>
-                                    <th>Tax</th>
-                                    <th>Discount</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in order_items %}
-                                <tr>
-                                    <td>{{ item.id }}</td>
-                                    <td>{{ item.product.name }}</td>
-                                    <td>{{ item.quantity }}</td>
-                                    <td>$ {{ item.price }}</td>
-                                    <td>$ {{ item.tax }}</td>
-                                    <td>$ {{ item.discount }}</td>
-                                    <td>$ {{ item.total_amount }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="6">Subtotal</td>
-                                    <td>$ {{ subAmount |default:0 }}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="6">Discount</td>
-                                    <td>$ {{ order.discount |default:0 }}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="6">Tax</td>
-                                    <td>$ {{ order.tax |default:0 }}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="6">GST</td>
-                                    <td>18%</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="6">Total</td>
-                                    <td>$ {{ order.total_amount |default:0 }}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-
-                        <div class="invoice-footer">
-                            <a href="javascript:window.print()" class="btn btn-print"><i class="fa fa-print"></i> Print</a>
-                            <a href="javascript:void(0)" id="invoice_download_btn" class="btn btn-download"><i class="fa fa-download"></i> Download</a>
+    
+                            <table class="invoice-items">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Item</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Tax</th>
+                                        <th>Discount</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order_items %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ item.product.name }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>$ {{ item.price }}</td>
+                                        <td>$ {{ item.tax }}</td>
+                                        <td>$ {{ item.discount }}</td>
+                                        <td>$ {{ item.total_amount }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="6">Subtotal</td>
+                                        <td>$ {{ subAmount |default:0 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6">Discount</td>
+                                        <td>$ {{ order.discount |default:0 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6">Tax</td>
+                                        <td>$ {{ order.tax |default:0 }}</td>
+                                    </tr>
+                                    {% if gst_applied == True %}
+                                    <tr>
+                                        <td colspan="6">GST</td>
+                                        <td>18%</td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <td colspan="6">Total</td>
+                                        <td>$ {{ order.total_amount |default:0 }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+    
+                            <div class="invoice-footer">
+                                <a href="javascript:window.print()" class="btn btn-print"><i class="fa fa-print"></i> Print</a>
+                                <a href="javascript:void(0)" id="invoice_download_btn" class="btn btn-download"><i class="fa fa-download"></i> Download</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</main>
+    </main>
 
 <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.0.0/dist/html2canvas.min.js"></script>

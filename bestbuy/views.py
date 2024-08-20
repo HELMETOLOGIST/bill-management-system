@@ -157,7 +157,6 @@ def store_billingg(request):
                 tax = float(data.get('tax'))
                 discount = float(data.get('discount'))
                 product = Product.objects.get(id=product_id)
-                gst_applied = request.POST.get('gst_applied')
 
                 # Check if the product is in stock
                 if product.stock <= 0:
@@ -192,10 +191,8 @@ def store_billingg(request):
             date = request.POST.get('date')
             product_data = json.loads(request.POST.get('product_data', '[]'))
 
-            # Set gst_applied to a default value (False) if not provided
-            gst_applied = request.POST.get('gst_applied')
-            print('gst:', gst_applied)
-            
+            # Set gst_applied based on POST data (expected to be 'true' or 'false' as string)
+            gst_applied = request.POST.get('gst_applied', 'false') == 'true'
 
             # Check if the order_id already exists in the database
             if Order.objects.filter(order_id=order_id).exists():
@@ -207,7 +204,7 @@ def store_billingg(request):
 
             # Calculate the total amount from product_data before saving the order
             total_amount = Decimal('0.00')
-            subTotal = 0  # Initialize subTotal
+            subTotal = Decimal('0.00')  # Initialize subTotal
             for product in product_data:
                 product_id = product['id']
                 quantity = Decimal(product['quantity'])
@@ -223,9 +220,7 @@ def store_billingg(request):
                 subTotal += item_total  # Accumulate subTotal
 
             subAmount = float(subTotal)
-            print(subAmount)
-            print(gst_applied)
-            if gst_applied == 'true':
+            if gst_applied:
                 gst_rate = Decimal('18.00')  # 18% GST
                 gst_amount = total_amount * (gst_rate / Decimal('100'))
                 total_amount += gst_amount
@@ -237,6 +232,7 @@ def store_billingg(request):
             # Store the order ID in the session
             request.session['order_id'] = order_id
             request.session['subAmount'] = subAmount
+            request.session['gst_applied'] = gst_applied  # Store gst_applied in session
 
             # Move items from product_data to OrderItem and update product quantities
             for product in product_data:
@@ -276,6 +272,7 @@ def store_billingg(request):
 
     return render(request, 'store_billing.html', {'product_list': in_stock_products, 'order_id': order_id})
 
+
 @csrf_exempt
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="store_login")
@@ -297,6 +294,8 @@ def check_stock(request):
 def store_pdff(request):
     order_id = request.session.get('order_id')
     subAmount = request.session.get('subAmount')
+    gst_applied = request.session.get('gst_applied')
+
     if not order_id:
         # Handle the case where no order ID is found in the session
         return redirect('store_billing')  # Redirect or show an error
@@ -309,8 +308,10 @@ def store_pdff(request):
         # Clear the order ID from the session after use
         del request.session['order_id']
         del request.session['subAmount']
+        del request.session['gst_applied']
 
-        return render(request, 'store_pdf.html', {'order': order, 'order_items': order_items, 'subAmount':subAmount})
+
+        return render(request, 'store_pdf.html', {'order': order, 'order_items': order_items, 'subAmount':subAmount, 'gst_applied': gst_applied})
     except Order.DoesNotExist:
         # Handle the case where the order does not exist
         return render(request, 'store_pdf.html', {'error_message': 'Order does not exist. Please try again.'})
@@ -509,15 +510,15 @@ class DownloadPDF(View):
         # Prepare context data
         data = {
             "company": "Best Buy",
-            "address": "Address Placeholder",  # Update with actual data if needed
+            "address": "KOTHAKURUSSI, Ottapalam - Cherppulassery Rd, near SBI ATM, Kerala 679503",  # Update with actual data if needed
             "city": "Palakkad",
             "state": "Kerala",
-            "zipcode": "673006",
+            "zipcode": "679503",
             "orders": orders,
             "order_items": order_items,
-            "phone": "Phone Placeholder",  # Update with actual data if needed
-            "email": "example@mail.com",
-            "website": "example.com",
+            "phone": "+917907970271",  # Update with actual data if needed
+            "email": "nafsalbabunkm@gmail.com",
+            "website": "bestbuy.in",
             "total_price": total_price,  # Total amount for the PDF
         }
 

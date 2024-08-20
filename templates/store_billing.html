@@ -266,7 +266,9 @@ $(document).ready(function() {
   }
 
   // Add product to table with validation
-  $("#productSelect").change(function() {
+  let counter = 1;
+
+$("#productSelect").change(function() {
     const selectedOption = $(this).find("option:selected");
     const productId = selectedOption.val();
     const productName = selectedOption.data("name");
@@ -293,24 +295,24 @@ $(document).ready(function() {
       }
 
       const newRow = `
-        <tr data-id="${productId}">
-          <td>${productId}</td>
-          <td>${productName}</td>
-          <td>
-            <input type="number" class="form-control quantity" value="1" min="1" max="${productStock}" />
-          </td>
-          <td>${productPrice}</td>
-          <td>
-            <input type="number" class="form-control tax" value="0" min="0" max="100" />
-          </td>
-          <td>
-            <input type="number" class="form-control discount" value="0" min="0" max="100" />
-          </td>
-          <td class="total">${productPrice}</td>
-          <td>
-            <button type="button" class="btn btn-danger btn-sm remove-btn">Remove</button>
-          </td>
-        </tr>
+      <tr data-id="${productId}">
+        <td>${counter++}</td> <!-- Display the increasing order number -->
+        <td>${productName}</td>
+        <td>
+          <input type="number" class="form-control quantity" value="1" min="1" max="${productStock}" />
+        </td>
+        <td>${productPrice}</td>
+        <td>
+          <input type="number" class="form-control tax" value="0" min="0" max="100" />
+        </td>
+        <td>
+          <input type="number" class="form-control discount" value="0" min="0" max="100" />
+        </td>
+        <td class="total">${productPrice}</td>
+        <td>
+          <button type="button" class="btn btn-danger btn-sm remove-btn">Remove</button>
+        </td>
+      </tr>
       `;
 
       $("#productTable tbody").append(newRow);
