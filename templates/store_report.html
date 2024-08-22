@@ -24,11 +24,11 @@
                         <div class="d-flex gap-2">
                           {% csrf_token %}
                           <div class="col-md-5">
-                            <label for="start-date">Start Date:</label>
+                            <label for="start-date" style="color:#d5d5d5;">Start Date:</label>
                             <input type="date" id="start-date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
                           </div>
                           <div class="col-md-5">
-                            <label for="end-date">End Date:</label>
+                            <label for="end-date" style="color:#d5d5d5;">End Date:</label>
                             <input type="date" id="end-date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
                           </div>
                           <button type="submit" class="btn btn-primary mt-4 col-md-2">Submit</button>

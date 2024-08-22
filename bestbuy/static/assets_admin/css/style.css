@@ -222,6 +222,7 @@ h6 {
   border: none;
   border-radius: 5px;
   box-shadow: 0px 0 30px rgba(1, 41, 112, 0.1);
+  background-color: #31363F;
 }
 
 .card-header,
@@ -236,7 +237,7 @@ h6 {
   padding: 20px 0 15px 0;
   font-size: 18px;
   font-weight: 500;
-  color: #012970;
+  color: #d5d5d5;
   font-family: "Poppins", sans-serif;
 }
 
@@ -698,7 +699,7 @@ h6 {
 }
 
 .sidebar-nav .nav-link.collapsed {
-  color: #ffffff;
+  color: #d5d5d5;
   background: #31363F;
 }
 
@@ -805,7 +806,7 @@ h6 {
 
 .dashboard .info-card h6 {
   font-size: 28px;
-  color: #012970;
+  color: #d5d5d5;
   font-weight: 700;
   margin: 0;
   padding: 0;
