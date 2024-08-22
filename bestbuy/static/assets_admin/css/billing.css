@@ -3,11 +3,8 @@ body {
     font-family: 'Arial', sans-serif;
   }
   
-  .container {
-    margin-bottom: 15px;
-    background: #000000a8;
+  .container1 {
     padding: 20px;
-    border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   

@@ -1,0 +1,190 @@
+{% extends "store_base.html" %} {% load static %} {% block title %}PDF{%
+endblock %} {% block content %}
+
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+/>
+<!-- Custom Stylesheet -->
+<link type="text/css" rel="stylesheet" href="{% static "assets_admin/css/style.css" %}">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+  }
+  .main {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 15px;
+  }
+  .invoice-header img {
+    width: 100px;
+  }
+  .invoice-header h1 {
+    font-size: 28px;
+    margin: 0;
+    text-align: right;
+  }
+  .invoice-details {
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .invoice-details h2 {
+    margin-bottom: 10px;
+    font-size: 20px;
+  }
+  .invoice-details p {
+    margin: 5px 0;
+  }
+  .invoice-items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .invoice-items th,
+  .invoice-items td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+  }
+  .invoice-items th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+  }
+  .invoice-items tfoot tr td {
+    font-weight: bold;
+    text-align: right;
+  }
+  .invoice-footer {
+    text-align: center;
+    margin-top: 30px;
+  }
+  .invoice-footer a {
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #fff;
+    background-color: #333;
+    border-radius: 5px;
+    margin: 0 10px;
+    display: inline-block;
+  }
+
+  /* Hide header and navbar when printing */
+  @media print {
+    body > *:not(.invoice-wrapper) {
+      display: none;
+    }
+    .invoice-wrapper {
+      box-shadow: none;
+      margin: 0;
+      width: 100%;
+    }
+  }
+</style>
+
+<!-- Invoice 2 start -->
+<main class="main">
+  <section class="section">
+    <div class="row">
+      <div class="invoice-header">
+        <img
+          src="{% static 'assets_admin/img/logo.png' %}"
+          alt="Company Logo"
+        />
+        <h1>Invoice</h1>
+      </div>
+
+      <div class="invoice-details">
+        <div class="invoice-to">
+          <h2>Bill To</h2>
+          <p>Name : {{ order.customer.name | upper }}</p>
+          <p>Phone Number :{{ order.customer.number }}</p>
+          <p>Order ID : {{ order.order_id }}</p>
+        </div>
+        <div class="invoice-from">
+          <h2>Invoice From</h2>
+          <p>Best Buy</p>
+          <p>
+            KOTHAKURUSSI, Ottapalam - Cherppulassery Rd,
+            <br />Near SBI ATM, Kerala 679503
+          </p>
+          <p>Email: nafsalbabunkm@gmail.com</p>
+          <p>Phone: +917907970271</p>
+          <p>GST: GSTIN32AWMPN3899A1ZD</p>
+        </div>
+      </div>
+
+      <table class="invoice-items">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Tax</th>
+            <th>Discount</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order_items %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>$ {{ item.price }}</td>
+            <td>$ {{ item.tax }}</td>
+            <td>$ {{ item.discount }}</td>
+            <td>$ {{ item.total_amount }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6">Subtotal</td>
+            <td>$ {{ subAmount | default:0 }}</td>
+          </tr>
+          <tr>
+            <td colspan="6">Discount</td>
+            <td>$ {{ order.discount | default:0 }}</td>
+          </tr>
+          <tr>
+            <td colspan="6">Tax</td>
+            <td>$ {{ order.tax | default:0 }}</td>
+          </tr>
+          {% if gst_applied == True %}
+          <tr>
+            <td colspan="6">GST</td>
+            <td>18 % (included)</td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td colspan="6">Total</td>
+            <td>$ {{ order.total_amount | default:0 }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="invoice-footer">
+        <a href="javascript:window.print()" class="btn btn-print"
+          ><i class="fa fa-print"></i> Print</a
+        >
+      </div>
+    </div>
+  </section>
+</main>
+<!-- End of #invoice_wrapper -->
+
+{% endblock %}

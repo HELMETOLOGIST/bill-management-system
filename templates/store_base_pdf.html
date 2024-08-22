@@ -1,0 +1,18 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>{% block title %}{% endblock %}</title>
+  <link href="{% static 'assets_admin/css/style.css' %}" rel="stylesheet">
+  <link href="{% static 'assets_admin/css/billing.css' %}" rel="stylesheet">
+  {% block head %}{% endblock %}
+</head>
+
+<body>
+  {% block content %}{% endblock %}
+</body>
+
+</html>

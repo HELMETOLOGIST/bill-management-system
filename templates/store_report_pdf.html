@@ -86,10 +86,10 @@
                             <td>{{ item.order.date }}</td>
                             <td>{{ item.product.name }}</td>
                             <td>{{ item.quantity }}</td>
-                            <td>${{ item.price }}</td>
-                            <td>${{ item.tax }}</td>
-                            <td>${{ item.discount }}</td>
-                            <td>${{ item.total_amount }}</td>
+                            <td>₹{{ item.price }}</td>
+                            <td>₹{{ item.tax }}</td>
+                            <td>₹{{ item.discount }}</td>
+                            <td>₹{{ item.total_amount }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -97,7 +97,7 @@
             </div>
         </div>
 
-        <h3 class="total-price">Total Price: ${{ total_price }}</h3>
+        <h3 class="total-price">Total Price: ₹{{ total_price }}</h3>
     </div>
 
     <!-- Bootstrap JS and dependencies -->

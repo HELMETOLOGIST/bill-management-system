@@ -11,8 +11,7 @@
   <meta content="" name="keywords">
 
   <!-- Favicons -->
-  <link href="{% static "assets_admin/img/favicon.png" %}" rel="icon">
-  <link href="{% static "assets_admin/img/apple-touch-icon.png" %}" rel="apple-touch-icon">
+  <link href="{% static 'assets_admin/img/favicon.ico' %}" rel="icon">
 
   <!-- Toastr CSS -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
@@ -24,157 +23,111 @@
   <!-- jQuery Validation JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 
-
   <!-- Google Fonts -->
   <link href="https://fonts.gstatic.com" rel="preconnect">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
   <!-- Vendor CSS Files -->
-  <link href="{% static "assets_admin/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
-  <link href="{% static "assets_admin/vendor/bootstrap-icons/bootstrap-icons.css" %}" rel="stylesheet">
-  <link href="{% static "assets_admin/vendor/boxicons/css/boxicons.min.css" %}" rel="stylesheet">
-  <link href="{% static "assets_admin/vendor/quill/quill.snow.css" %}" rel="stylesheet">
-  <link href="{% static "assets_admin/vendor/quill/quill.bubble.css" %}" rel="stylesheet">
-  <link href="{% static "assets_admin/vendor/remixicon/remixicon.css" %}" rel="stylesheet">
-  <link href="{% static "assets_admin/vendor/simple-datatables/style.css" %}" rel="stylesheet">
+  <link href="{% static 'assets_admin/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets_admin/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets_admin/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets_admin/vendor/quill/quill.snow.css' %}" rel="stylesheet">
+  <link href="{% static 'assets_admin/vendor/quill/quill.bubble.css' %}" rel="stylesheet">
+  <link href="{% static 'assets_admin/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+  <link href="{% static 'assets_admin/vendor/simple-datatables/style.css' %}" rel="stylesheet">
 
   <!-- Template Main CSS File -->
-  <link href="{% static "assets_admin/css/style.css" %}" rel="stylesheet">
-  <link href="{% static "assets_admin/css/billing.css" %}" rel="stylesheet">
-
-
-  <!-- =======================================================
-  * Template Name: NiceAdmin
-  * Updated: Sep 18 2023 with Bootstrap v5.3.2
-  * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+  <link href="{% static 'assets_admin/css/style.css' %}" rel="stylesheet">
+  <link href="{% static 'assets_admin/css/billing.css' %}" rel="stylesheet">
 </head>
 
 <body>
 
   <!-- ======= Header ======= -->
-  
   <header id="header" class="header fixed-top d-flex align-items-center">
-
     <div class="d-flex align-items-center justify-content-between">
-      <a href="{% url "store_dashboard" %}" class="logo d-flex align-items-center">
-        <img src="{% static "assets_admin/img/logo.png" %}" alt="" width="110px">
+      <a href="{% url 'store_dashboard' %}" class="logo d-flex align-items-center">
+        <img src="{% static 'assets_admin/img/logo.png' %}" alt="" width="110px">
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
     </div><!-- End Logo -->
 
-    {% comment %} <div class="search-bar">
-      <form class="search-form d-flex align-items-center" method="POST" action="#">
-        <input type="text" name="query" placeholder="Search" title="Enter search keyword">
-        <button type="submit" title="Search"><i class="bi bi-search"></i></button>
-      </form>
-    </div><!-- End Search Bar --> {% endcomment %}
-
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
-
-        {% comment %} <ul class="nav-item d-block d-lg-none">
-          <a class="nav-link nav-icon search-bar-toggle " href="#">
-            <i class="bi bi-search"></i>
-          </a>
-        </ul><!-- End Search Icon--> {% endcomment %}
-
-          </ul><!-- End Messages Dropdown Items -->
-
-        </li><!-- End Messages Nav -->
-
-        <ul class="nav-item dropdown pe-3">
-
+        <li class="nav-item dropdown pe-3">
           <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
             <i class="ri-user-line"></i>
           </a><!-- End Profile Iamge Icon -->
-
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
-              <h6>{{ adname }}</h6>
+              <h6>Best Buy</h6>
             </li>
             <li>
               <hr class="dropdown-divider">
             </li>
-
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="{% url "admin_logout" %}">
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'admin_logout' %}">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Sign Out</span>
               </a>
             </li>
-
           </ul><!-- End Profile Dropdown Items -->
-        </ul><!-- End Profile Nav -->
-
+        </li><!-- End Profile Nav -->
       </ul>
     </nav><!-- End Icons Navigation -->
-
   </header><!-- End Header -->
-  
+
   <!-- ======= Sidebar ======= -->
   <aside id="sidebar" class="sidebar">
-
     <ul class="sidebar-nav" id="sidebar-nav">
-
       <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "store_dashboard" %}">
+        <a class="nav-link collapsed" href="{% url 'store_dashboard' %}">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "store_billing" %}">
+        <a class="nav-link collapsed" href="{% url 'store_billing' %}">
           <i class="bi bi-calculator"></i>
           <span>Billing</span>
         </a>
       </li><!-- End Billing Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "store_items" %}">
-          <i class=" ri-dropbox-line"></i>
+        <a class="nav-link collapsed" href="{% url 'store_items' %}">
+          <i class="ri-dropbox-line"></i>
           <span>Item Master</span>
         </a>
       </li><!-- End Products Nav -->
+
       <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url "store_report" %}">
-          <i class=" ri-list-settings-fill"></i>
+        <a class="nav-link collapsed" href="{% url 'store_report' %}">
+          <i class="ri-list-settings-fill"></i>
           <span>Sales Report</span>
         </a>
-      </li><!-- End Category Nav -->
+      </li><!-- End Sales Report Nav -->
     </ul>
-  </aside><!-- End Sidebar-->
-  
+  </aside><!-- End Sidebar -->
 
   <!-- ======= Content Wrapper ======= -->
- 
-
-  {% block content %}
-  {% endblock %}
-
-
+  {% block content %}{% endblock %}
   <!-- ======= Content Wrapper end ======= -->
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
-  <script src="{% static "assets_admin/vendor/apexcharts/apexcharts.min.js" %}"></script>
-  <script src="{% static "assets_admin/vendor/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
-  <script src="{% static "assets_admin/vendor/chart.js/chart.umd.js" %}"></script>
-  <script src="{% static "assets_admin/vendor/echarts/echarts.min.js" %}"></script>
-  <script src="{% static "assets_admin/vendor/quill/quill.min.js" %}"></script>
-  <script src="{% static "assets_admin/vendor/simple-datatables/simple-datatables.js" %}"></script>
-  <script src="{% static "assets_admin/vendor/tinymce/tinymce.min.js" %}"></script>
-  <script src="{% static "assets_admin/vendor/php-email-form/validate.js" %}"></script>
+  <script src="{% static 'assets_admin/vendor/apexcharts/apexcharts.min.js' %}"></script>
+  <script src="{% static 'assets_admin/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets_admin/vendor/chart.js/chart.umd.js' %}"></script>
+  <script src="{% static 'assets_admin/vendor/echarts/echarts.min.js' %}"></script>
+  <script src="{% static 'assets_admin/vendor/quill/quill.min.js' %}"></script>
+  <script src="{% static 'assets_admin/vendor/simple-datatables/simple-datatables.js' %}"></script>
+  <script src="{% static 'assets_admin/vendor/tinymce/tinymce.min.js' %}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-
-
   <!-- Template Main JS File -->
-  <script src="{% static "assets_admin/js/main.js" %}"></script>
+  <script src="{% static 'assets_admin/js/main.js' %}"></script>
 
 </body>
 
