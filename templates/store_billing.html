@@ -371,11 +371,23 @@ $("#productSelect").change(function() {
 </script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split('T')[0];
+    // Create a new Date object for the local time
+    const now = new Date();
+    
+    // Extract the local date components
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const day = String(now.getDate()).padStart(2, '0');
+    
+    // Format the date in YYYY-MM-DD
+    const today = `${year}-${month}-${day}`;
+    
+    // Log the date to the console for debugging purposes
+    console.log('Current local date:', today);
     
     // Set the value of the date input field to today's date
     document.getElementById('billDate').value = today;
   });
 </script>
+
 {% endblock %}

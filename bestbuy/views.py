@@ -289,6 +289,7 @@ def check_stock(request):
 
 
 
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="store_login")
 def store_pdff(request):
@@ -532,3 +533,16 @@ class DownloadPDF(View):
             return response
 
         return HttpResponse("Error generating PDF", status=500)
+    
+
+def render_to_pdf(template_src, context_dict={}):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    
+    # Ensure that utf-8 encoding is used
+    pdf = pisa.pisaDocument(BytesIO(html.encode('UTF-8')), result, encoding='UTF-8')
+    
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None
