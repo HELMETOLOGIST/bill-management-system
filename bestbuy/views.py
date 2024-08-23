@@ -5,8 +5,6 @@ from django.contrib import messages
 from django.views.decorators.cache import cache_control
 from django.contrib.auth.decorators import user_passes_test
 from .models import Product
-from .forms import ProductForm
-from django.core.exceptions import ObjectDoesNotExist
 import uuid
 from .models import Customer, Product, Order, OrderItem, Cart
 from django.http import JsonResponse
@@ -24,10 +22,9 @@ from django.template.loader import get_template
 from django.views import View
 from .utils import render_to_pdf
 from django.utils.decorators import method_decorator
-from django.db.models import Sum, Count
+from django.db.models import Sum
 import json
 from datetime import datetime, timedelta, date
-from django.utils import timezone
 from django.http import JsonResponse
 from django.contrib import messages
 
