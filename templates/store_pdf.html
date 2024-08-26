@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}PDF{% endblock %}
 {% block content %}
-  
+
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -81,6 +81,19 @@
       display: inline-block;
     }
 
+    /* Button to navigate to billing page */
+    .billing-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #28a745;
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 5px;
+      text-decoration: none;
+      z-index: 1000;
+    }
+
     /* Print-specific styles */
     @media print {
       body > *:not(.main) {
@@ -95,8 +108,14 @@
       .navbar {
         display: none;
       }
+      .billing-button {
+        display: none;
+      }
     }
   </style>
+  
+  <!-- Button to navigate to billing page -->
+  <a href="{% url 'store_billing' %}" class="billing-button">Back to Billing Page</a>
   
   <!-- Invoice start -->
   <main id="main" class="main">
