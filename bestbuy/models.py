@@ -54,3 +54,27 @@ class Cart(models.Model):
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class Supplier(models.Model):
+    name = models.CharField(max_length=255)
+    phone_number = models.BigIntegerField(default=0)
+    product_name = models.CharField(max_length=255)
+    quantity = models.PositiveIntegerField()
+    credit = models.DecimalField(max_digits=10, decimal_places=2)
+    debit = models.DecimalField(max_digits=10, decimal_places=2)
+    date_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.product_name}"
+    
+
+class CustomerTransaction(models.Model):
+    customer_name = models.CharField(max_length=255)
+    phone_number = models.BigIntegerField(default=0)
+    credit = models.DecimalField(max_digits=10, decimal_places=2)
+    debit = models.DecimalField(max_digits=10, decimal_places=2)
+    date_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.customer_name} - {self.phone_number} - Credit: {self.credit}, Debit: {self.debit}"

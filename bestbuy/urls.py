@@ -15,4 +15,16 @@ urlpatterns = [
     path('download_exel/', views.excel_report, name='download_exel'),
     path('pdf_download/', views.DownloadPDF.as_view(), name='pdf_download'),
     path('check_stock/', views.check_stock, name='check_stock'),
+    path('store_supplier/', views.store_supplierr, name='store_supplier'),
+    path('store_supplier_add/', views.store_supplier_addd, name='store_supplier_add'),
+    path('store_supplier_edit/<str:id>/', views.store_supplier_editt, name='store_supplier_edit'),  # Update this line
+    path('store_supplier_delete/<str:id>/', views.store_supplier_delete, name='store_supplier_delete'),
+
+    path('store_customer/', views.store_customerr, name='store_customer'),
+    path('store_customer_add/', views.store_customer_addd, name='store_customer_add'),
+    path('store_customer_edit/<str:id>/', views.store_customer_editt, name='store_customer_edit'),  # Update this line
+    path('store_customer_delete/<str:id>/', views.store_customer_delete, name='store_customer_delete'),
+
+
+    
 ]

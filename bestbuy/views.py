@@ -6,7 +6,7 @@ from django.views.decorators.cache import cache_control
 from django.contrib.auth.decorators import user_passes_test
 from .models import Product
 import uuid
-from .models import Customer, Product, Order, OrderItem, Cart
+from .models import Customer, Product, Order, OrderItem, Cart, CustomerTransaction, Supplier
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -543,3 +543,142 @@ def render_to_pdf(template_src, context_dict={}):
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type='application/pdf')
     return None
+
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+def store_supplierr(request):
+    suppliers = Supplier.objects.all()
+    return render(request, 'store_supplier.html', {'suppliers': suppliers})
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+def store_supplier_addd(request):
+    if request.method == 'POST':
+        name = request.POST.get('supplier_name')
+        phone_number = request.POST.get('phone_number')
+        product_name = request.POST.get('product_name')
+        quantity = request.POST.get('quantity')
+        credit = request.POST.get('credit')
+        debit = request.POST.get('debit')
+
+        supplier = Supplier(
+            name=name,
+            phone_number=phone_number,
+            product_name=product_name,
+            quantity=quantity,
+            credit=credit,
+            debit=debit
+        )
+        supplier.save()
+        return JsonResponse({'success':True})
+
+    return render(request, 'store_supplier_add.html')
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+def store_supplier_editt(request,id):
+    supplier = get_object_or_404(Supplier, id=id)
+    if request.method == 'POST':
+        name = request.POST.get('supplier_name')
+        phone_number = request.POST.get('phone_number')
+        product_name = request.POST.get('product_name')
+        quantity = request.POST.get('quantity')
+        credit = request.POST.get('credit')
+        debit = request.POST.get('debit')
+
+         # Validation logic
+        if not (name and len(name) >= 3):
+            return JsonResponse({'success': False, 'message': 'Supplier name must be at least 3 characters long'})
+        if not phone_number.isdigit():
+            return JsonResponse({'success': False, 'message': 'Phone number must be an integer'})
+        if not (product_name and len(product_name) >= 3):
+            return JsonResponse({'success': False, 'message': 'Product name must be at least 3 characters long'})
+        if not quantity.isdigit():
+            return JsonResponse({'success': False, 'message': 'Quantity must be an integer'})
+        if not credit.isdigit():
+            return JsonResponse({'success': False, 'message': 'Credit must be an integer'})
+        if not debit.isdigit():
+            return JsonResponse({'success': False, 'message': 'Debit must be an integer'})
+        
+        supplier.name = name
+        supplier.phone_number = phone_number
+        supplier.product_name = product_name
+        supplier.quantity = quantity
+        supplier.credit = credit
+        supplier.debit = debit
+        supplier.save()
+        return JsonResponse({'success': True, 'message': 'Supplier details updated successfully'})
+
+    return render(request, 'store_supplier_edit.html', {'supplier': supplier})
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+def store_supplier_delete(request, id):
+    supplier = get_object_or_404(Supplier, id=id)
+    supplier.delete()
+    messages.success(request, 'Supplier deleted successfully')
+    return redirect('store_supplier')
+
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+def store_customerr(request):
+    customers = CustomerTransaction.objects.all()
+    return render(request, 'store_customer.html', {'customers': customers})
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+def store_customer_addd(request):
+    if request.method == 'POST':
+        customer_name = request.POST.get('customer_name')
+        phone_number = request.POST.get('phone_number')
+        credit = request.POST.get('credit')
+        debit = request.POST.get('debit')
+
+        customer = CustomerTransaction(
+            customer_name=customer_name,
+            phone_number=phone_number,
+            credit=credit,
+            debit=debit
+        )
+        customer.save()
+        return JsonResponse({'success':True})
+
+    return render(request, 'store_customer_add.html')
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+def store_customer_editt(request,id):
+    customer = get_object_or_404(CustomerTransaction, id=id)
+    if request.method == 'POST':
+        customer_name = request.POST.get('customer_name')
+        phone_number = request.POST.get('phone_number')
+        credit = request.POST.get('credit')
+        debit = request.POST.get('debit')
+
+        if not (customer_name and len(customer_name) >= 3):
+            return JsonResponse({'success': False, 'message': 'Customer name must be at least 3 characters long'})
+        if not phone_number.isdigit():
+            return JsonResponse({'success': False, 'message': 'Phone number must be an integer'})
+        if not credit.isdigit():
+            return JsonResponse({'success': False, 'message': 'Credit must be an integer'})
+        if not debit.isdigit():
+            return JsonResponse({'success': False, 'message': 'Debit must be an integer'})
+        
+        customer.customer_name = customer_name
+        customer.phone_number = phone_number
+        customer.credit = credit
+        customer.debit = debit
+        customer.save()
+        return JsonResponse({'success': True, 'message': 'Customer details updated successfully'})
+
+    return render(request, 'store_customer_edit.html', {'customer': customer})
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+def store_customer_delete(request, id):
+    customer = get_object_or_404(CustomerTransaction, id=id)
+    customer.delete()
+    messages.success(request, 'Customer Transaction deleted successfully')
+    return redirect('store_customer')

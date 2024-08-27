@@ -1,0 +1,57 @@
+{% extends "store_base.html" %}
+{% load static %}
+{% block title %}Customer Transaction{% endblock %}
+{% block content %}
+
+<main id="main" class="main">
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title">Customer Transaction</h3>
+            <a href="{% url 'store_customer_add' %}"><button type="button" class="btn btn-primary">Add</button></a>
+            <!-- Table with stripped rows -->
+            <div class="table-responsive">
+              <table class="table datatable">
+                <thead>
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Customer Name</th>
+                    <th scope="col">Phone Number</th>
+                    <th scope="col">Date & Time</th>
+                    <th scope="col">Credit</th>
+                    <th scope="col">Debit</th>
+                    <th scope="col">Edit</th>
+                    <th scope="col">Delete</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for custom in customers %}
+                  <tr>
+                    <th scope="row">{{custom.id}}</th>
+                    <td>{{custom.customer_name}}</td>
+                    <td>{{custom.phone_number}}</td>
+                    <td>{{custom.date_time}}</td>
+                    <td>{{custom.credit}}</td>
+                    <td>{{custom.debit}}</td>
+                    <td class="align-middle">
+                      <a href="{% url 'store_customer_edit' custom.id %}" class="btn btn-outline-primary">Edit</a>
+                    </td>
+                    <td class="align-middle">
+                      <a href="{% url 'store_customer_delete' custom.id %}" class="btn btn-outline-danger">Delete</a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <!-- End Table with stripped rows -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- End #main -->
+{% endblock %}

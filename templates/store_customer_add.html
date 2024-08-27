@@ -1,0 +1,117 @@
+{% extends "store_base.html" %}
+{% load static %}
+{% block title %}Add Customer{% endblock %}
+{% block content %}
+
+<main id="main" class="main">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Add Customer</h5>
+
+        <!-- No Labels Form -->
+        <form id="productForm" class="row g-3" action="{% url "store_customer_add" %}" method="POST">
+          {% csrf_token %}
+          <div class="col-md-12">
+            <input type="text" class="form-control" placeholder="Customer Name" name="customer_name">
+          </div>
+          <div class="col-md-12">
+            <input type="tel" class="form-control" placeholder="Phone Number" name="phone_number">
+          </div>
+          <div class="col-12">
+            <input type="number" class="form-control" placeholder="Credit" name="credit">
+          </div>
+          <div class="col-12">
+            <input type="number" class="form-control" placeholder="Debit" name="debit">
+          </div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form><!-- End No Labels Form -->
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  function hideAlert() {
+    var alertMessage = document.getElementById('alert-message');
+    if (alertMessage) {
+      setTimeout(function () {
+        alertMessage.style.display = 'none';
+      }, 2000);
+    }
+  }
+  window.onload = hideAlert;
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $("#productForm").validate({
+      rules: {
+        product_name: {
+          required: true,
+          minlength: 3
+        },
+        stock: {
+          required: true,
+          digits: true
+        },
+        price: {
+          required: true,
+          digits: true
+        },
+      },
+      messages: {
+        product_name: {
+          required: "Please enter the product name",
+          minlength: "Product name must be at least 3 characters long"
+        },
+        stock: {
+          required: "Please enter the stock quantity",
+          digits: "Stock must be an integer"
+        },
+        price: {
+          required: "Please enter the product price",
+          digits: "Price must be an integer"
+        }
+      },
+      errorClass: "is-invalid",
+      errorPlacement: function (error, element) {
+        error.addClass("invalid-feedback");
+        error.insertAfter(element);
+      },
+      submitHandler: function (form) {
+        $.ajax({
+          url: $(form).attr('action'),
+          method: $(form).attr('method'),
+          data: $(form).serialize(),
+          success: function (response) {
+            if (response.success) {
+              Toastify({
+                text: "Product added successfully",
+                backgroundColor: "green",
+                close: true,
+              }).showToast();
+              form.reset();
+            } else if (response.duplicate) {
+              Toastify({
+                text: "Product with the same name already exists",
+                backgroundColor: "red",
+                close: true,
+              }).showToast();
+            }
+          }
+        });
+      }
+    });
+  });
+</script>
+
+{% endblock %}
