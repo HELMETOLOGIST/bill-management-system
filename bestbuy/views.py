@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import user_passes_test
 from .models import Product
 import uuid
 from .models import Customer, Product, Order, OrderItem, Cart, CustomerTransaction, Supplier
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -27,6 +28,7 @@ import json
 from datetime import datetime, timedelta, date
 from django.http import JsonResponse
 from django.contrib import messages
+from django.http import HttpResponseForbidden
 
 
 # Create your views here.
@@ -328,6 +330,7 @@ def store_items_addd(request):
     if request.method == 'POST':
         product_name = request.POST.get('product_name')
         stock = request.POST.get('stock')
+        product_cost = request.POST.get('product_cost')
         price = request.POST.get('price')
         
         # Check if a product with the same name already exists
@@ -338,6 +341,7 @@ def store_items_addd(request):
         product = Product(
             name=product_name,
             stock=stock,
+            product_cost=product_cost,
             price=price,
         )
         product.save()
@@ -353,6 +357,7 @@ def store_items_editt(request, id):
     if request.method == 'POST':
         edit_name = request.POST.get('product_name')
         edit_stock = request.POST.get('stock')
+        edit_product_cost = request.POST.get('product_cost')
         edit_price = request.POST.get('price')
 
         # Validation logic
@@ -362,10 +367,13 @@ def store_items_editt(request, id):
             return JsonResponse({'success': False, 'message': 'Stock must be an integer'})
         if not edit_price.isdigit():
             return JsonResponse({'success': False, 'message': 'Price must be an integer'})
+        if not edit_product_cost.isdigit():
+            return JsonResponse({'success': False, 'message': 'Product Cost must be an integer'})
 
         # Update the product
         product.name = edit_name
         product.stock = int(edit_stock)
+        product.product_cost = int(edit_product_cost)
         product.price = int(edit_price)
         product.save()
         return JsonResponse({'success': True, 'message': 'Product updated successfully'})
@@ -397,9 +405,12 @@ def store_reportt(request):
     if start_date and end_date:
         # Filter orders based on the provided date range
         items = items.filter(order__date__range=[start_date, end_date])
+    
+    total_profit = sum(item.profit for item in items)  # Calculate total profit
 
     context = {
         'items': items,
+        'total_profit': total_profit,
     }
 
     return render(request, 'store_report.html', context)
@@ -430,6 +441,7 @@ def excel_report(request):
         "Tax",
         "Discount",
         "Total Amount",
+        "Profit",
     ]
     
     # Write the column headers
@@ -457,6 +469,7 @@ def excel_report(request):
     )
     
     total_sum = 0  # Variable to hold the total amount sum
+    total_profit = 0
 
     # Iterate over orders and write data to the Excel sheet
     for order in orders:
@@ -471,13 +484,19 @@ def excel_report(request):
             work_s.write(row_num, 6, item.tax, font_style)
             work_s.write(row_num, 7, item.discount, font_style)
             work_s.write(row_num, 8, item.total_amount, font_style)
+            work_s.write(row_num, 9, item.profit, font_style)
             
             total_sum += item.total_amount  # Add the total amount to the sum
+            total_profit += item.profit
     
     # Write the total amount sum to a new row
     row_num += 1
     work_s.write(row_num, 8, 'Total Sum', font_style)  # Label for the sum
     work_s.write(row_num, 9, total_sum, font_style)  # Total amount sum
+
+    row_num += 1
+    work_s.write(row_num, 8, 'Total Profit', font_style)  # Label for total profit
+    work_s.write(row_num, 9, total_profit, font_style)  # Total profit sum
     
     # Save the workbook
     work_b.save(response)
@@ -504,6 +523,8 @@ class DownloadPDF(View):
 
         # Calculate the total amount for all order items
         total_price = sum(item.total_amount for item in order_items)
+        total_profit = sum(item.profit for item in order_items)  # Calculate total profit
+
 
         # Prepare context data
         data = {
@@ -518,6 +539,7 @@ class DownloadPDF(View):
             "email": "nafsalbabunkm@gmail.com",
             "website": "bestbuy.in",
             "total_price": total_price,  # Total amount for the PDF
+            "total_profit": total_profit,  # Include total profit in the PDF
         }
 
         pdf = render_to_pdf("store_report_pdf.html", data)
@@ -668,8 +690,8 @@ def store_customer_editt(request,id):
         
         customer.customer_name = customer_name
         customer.phone_number = phone_number
-        customer.credit = credit
-        customer.debit = debit
+        customer.credit = int(credit)
+        customer.debit = int(debit)
         customer.save()
         return JsonResponse({'success': True, 'message': 'Customer details updated successfully'})
 
@@ -682,3 +704,4 @@ def store_customer_delete(request, id):
     customer.delete()
     messages.success(request, 'Customer Transaction deleted successfully')
     return redirect('store_customer')
+

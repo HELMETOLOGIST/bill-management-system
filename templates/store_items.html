@@ -19,6 +19,7 @@
                     <th scope="col">ID</th>
                     <th scope="col">Name</th>
                     <th scope="col">Stock</th>
+                    <th scope="col">Product Cost</th>
                     <th scope="col">Price</th>
                     <th scope="col">Edit</th>
                     <th scope="col">Delete</th>
@@ -30,6 +31,7 @@
                     <th scope="row">{{ pro.id }}</th>
                     <td>{{ pro.name }}</td>
                     <td>{{ pro.stock }}</td>
+                    <td>{{ pro.product_cost }}</td>
                     <td>{{ pro.price }}</td>
                     <td class="align-middle">
                       <a href="{% url 'store_items_edit' pro.id %}" class="btn btn-outline-primary">Edit</a>

@@ -25,6 +25,4 @@ urlpatterns = [
     path('store_customer_edit/<str:id>/', views.store_customer_editt, name='store_customer_edit'),  # Update this line
     path('store_customer_delete/<str:id>/', views.store_customer_delete, name='store_customer_delete'),
 
-
-    
 ]

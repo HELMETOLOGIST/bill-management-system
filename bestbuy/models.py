@@ -4,7 +4,8 @@ import uuid
 class Product(models.Model):
     name = models.CharField(max_length=100)
     stock = models.IntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    product_cost = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    price = models.DecimalField(max_digits=20, decimal_places=2)
 
     def __str__(self):
         return self.name
@@ -43,9 +44,11 @@ class OrderItem(models.Model):
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    profit = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
 
-    def __str__(self):
-        return self.product.name  # Assuming you want to return the product name
+    def save(self, *args, **kwargs):
+        self.profit = (self.price - self.product.product_cost) * self.quantity
+        super(OrderItem, self).save(*args, **kwargs)
 
 class Cart(models.Model):
     product = models.ForeignKey(Product, related_name='cart_items', on_delete=models.CASCADE)
@@ -78,3 +81,4 @@ class CustomerTransaction(models.Model):
 
     def __str__(self):
         return f"{self.customer_name} - {self.phone_number} - Credit: {self.credit}, Debit: {self.debit}"
+    

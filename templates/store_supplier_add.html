@@ -61,32 +61,56 @@
   $(document).ready(function () {
     $("#productForm").validate({
       rules: {
+        supplier_name: {
+          required: true,
+          minlength: 3
+        },
+        phone_number: {
+          required: true,
+          digits: true
+        },
         product_name: {
           required: true,
           minlength: 3
         },
-        stock: {
+        quantity: {
           required: true,
           digits: true
         },
-        price: {
+        credit: {
           required: true,
           digits: true
         },
+        debit: {
+          required: true,
+          digits: true
+        }
       },
       messages: {
+        supplier_name: {
+          required: "Please enter the supplier name",
+          minlength: "Supplier name must be at least 3 characters long"
+        },
+        phone_number: {
+          required: "Please enter the phone number",
+          digits: "Phone number must be an integer and less than 10 digit"
+        },
         product_name: {
           required: "Please enter the product name",
           minlength: "Product name must be at least 3 characters long"
         },
-        stock: {
-          required: "Please enter the stock quantity",
-          digits: "Stock must be an integer"
+        quantity: {
+          required: "Please enter the Quantity",
+          digits: "Quantity must be an integer"
         },
-        price: {
-          required: "Please enter the product price",
-          digits: "Price must be an integer"
-        }
+        credit: {
+          required: "Please enter the credit",
+          digits: "Credit must be an integer"
+        },
+        debit: {
+          required: "Please enter the debit",
+          digits: "Credit must be an integer"
+        },
       },
       errorClass: "is-invalid",
       errorPlacement: function (error, element) {
@@ -101,14 +125,14 @@
           success: function (response) {
             if (response.success) {
               Toastify({
-                text: "Product added successfully",
+                text: "Supplier added successfully",
                 backgroundColor: "green",
                 close: true,
               }).showToast();
               form.reset();
             } else if (response.duplicate) {
               Toastify({
-                text: "Product with the same name already exists",
+                text: "Supplier with the same name already exists",
                 backgroundColor: "red",
                 close: true,
               }).showToast();
