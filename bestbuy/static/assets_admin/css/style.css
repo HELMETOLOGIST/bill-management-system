@@ -614,6 +614,15 @@ h6 {
   background-color: #76ABAE;
 }
 
+.nav-link.active {
+  background-color: #007bff; /* Change to your preferred background color */
+  color: rgb(255, 255, 255); /* Change the text color */
+}
+
+.nav-link.active i {
+  color: white; /* Change the icon color */
+}
+
 @media (max-width: 1199px) {
   .sidebar {
     left: -300px;
@@ -685,7 +694,7 @@ h6 {
   align-items: center;
   font-size: 15px;
   font-weight: 600;
-  color: #ffffff;
+  color: #000000;
   transition: 0.3;
   background: #f6f9ff;
   padding: 10px 15px;
