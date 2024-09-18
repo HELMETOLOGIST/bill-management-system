@@ -19,10 +19,10 @@ urlpatterns = [
     path('store_supplier_add/', views.store_supplier_addd, name='store_supplier_add'),
     path('store_supplier_edit/<str:id>/', views.store_supplier_editt, name='store_supplier_edit'),  # Update this line
     path('store_supplier_delete/<str:id>/', views.store_supplier_delete, name='store_supplier_delete'),
-
     path('store_customer/', views.store_customerr, name='store_customer'),
     path('store_customer_add/', views.store_customer_addd, name='store_customer_add'),
     path('store_customer_edit/<str:id>/', views.store_customer_editt, name='store_customer_edit'),  # Update this line
     path('store_customer_delete/<str:id>/', views.store_customer_delete, name='store_customer_delete'),
+    path('splash/', views.splashh, name='splash'),
 
 ]

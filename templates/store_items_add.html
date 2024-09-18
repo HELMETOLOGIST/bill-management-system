@@ -34,6 +34,11 @@
   </div>
 </main>
 
+{% comment %} <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script> {% endcomment %}
 <script>
   function hideAlert() {
     var alertMessage = document.getElementById('alert-message');
@@ -46,18 +51,20 @@
   window.onload = hideAlert;
 </script>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
-<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
 <script>
   $(document).ready(function () {
+    // Custom validation method: Ensures product name only contains letters and spaces
+    $.validator.addMethod("lettersOnly", function (value, element) {
+      return this.optional(element) || /^[a-zA-Z\s]+$/.test(value);
+    }, "Product name must contain only letters and spaces");
+
+    // Form validation rules and setup
     $("#productForm").validate({
       rules: {
         product_name: {
           required: true,
-          minlength: 3
+          minlength: 3,
+          lettersOnly: true  // Apply custom validation method
         },
         stock: {
           required: true,
@@ -71,7 +78,8 @@
       messages: {
         product_name: {
           required: "Please enter the product name",
-          minlength: "Product name must be at least 3 characters long"
+          minlength: "Product name must be at least 3 characters long",
+          lettersOnly: "Product name must contain only letters and spaces"
         },
         stock: {
           required: "Please enter the stock quantity",
@@ -113,5 +121,6 @@
     });
   });
 </script>
+
 
 {% endblock %}

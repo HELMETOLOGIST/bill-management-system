@@ -29,6 +29,7 @@ from datetime import datetime, timedelta, date
 from django.http import JsonResponse
 from django.contrib import messages
 from django.http import HttpResponseForbidden
+import logging
 
 
 # Create your views here.
@@ -271,7 +272,6 @@ def store_billingg(request):
 
     return render(request, 'store_billing.html', {'product_list': in_stock_products, 'order_id': order_id})
 
-
 @csrf_exempt
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="store_login")
@@ -303,18 +303,22 @@ def store_pdff(request):
     try:
         order = Order.objects.get(order_id=order_id)
         order_items = OrderItem.objects.filter(order=order)
-        # Prepare data for PDF generation here
-        
+
         # Clear the order ID from the session after use
         del request.session['order_id']
         del request.session['subAmount']
         del request.session['gst_applied']
 
-
-        return render(request, 'store_pdf.html', {'order': order, 'order_items': order_items, 'subAmount':subAmount, 'gst_applied': gst_applied})
+        # Prepare data for PDF generation (if required)
+        # For example, you could create a PDF file here or just render the HTML
+        
+        return render(request, 'store_pdf.html', {'order': order, 'order_items': order_items, 'subAmount': subAmount, 'gst_applied': gst_applied})
     except Order.DoesNotExist:
         # Handle the case where the order does not exist
         return render(request, 'store_pdf.html', {'error_message': 'Order does not exist. Please try again.'})
+    except Exception as e:
+        # Handle unexpected exceptions
+        return render(request, 'store_pdf.html', {'error_message': 'An error occurred while generating the invoice.'})
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -705,3 +709,8 @@ def store_customer_delete(request, id):
     messages.success(request, 'Customer Transaction deleted successfully')
     return redirect('store_customer')
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="store_login")
+def splashh(request):
+    return render(request, 'splash.html')
