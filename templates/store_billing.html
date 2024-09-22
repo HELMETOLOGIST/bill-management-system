@@ -132,15 +132,15 @@
         </div>
       </div>
 
-      <div class="form-group text-right mt-2">
+      <div class="form-group text-right mt-4">
         <h5 style="color:white;">Total Amount: 
-          <span id="totalAmountContainer">₹<span style="color:black;" id="grandTotal">0.00</span></span>
-          <label id="gstToggle">
+          <span style="color:black;" id="totalAmountContainer">₹<span style="color:black;" id="grandTotal">0.00</span></span>
+          {% comment %} <label id="gstToggle">
             <input value="true" name="gst_applied" type="checkbox" id="gstCheckbox" checked> Apply GST (18%)
-          </label>
+          </label> {% endcomment %}
         </h5>
-        <button type="submit" class="btn btn-success mt-5" id="saveButton">Save</button>
       </div>
+      <button type="submit" class="btn btn-success mb-1" id="saveButton">Save</button>
       
       <!-- Hidden field for serialized product data -->
       <input type="hidden" name="product_data" id="productData">
